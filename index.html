@@ -191,12 +191,32 @@ function icon(p) {
     html: `<svg viewBox="0 0 30 30" style="transform:rotate(${p.angle || 0}deg)"><circle cx="15" cy="15" r="11" fill="${HEX[s]}" stroke="#fff" stroke-width="2.5"/>${arrow}</svg>`,
   });
 }
+// Batterie interne du boîtier : IO 113 (niveau en %) si disponible,
+// sinon estimation à partir de IO 67 (tension batterie en mV, Li-ion 3,5 V → 0 %, 4,1 V → 100 %)
+function battery(p) {
+  const io = p.io || {};
+  if (io['113'] !== undefined) return { pct: Math.min(100, Math.max(0, +io['113'])), est: false };
+  if (io['67'] !== undefined && +io['67'] > 0) {
+    const v = +io['67'] / 1000;
+    return { pct: Math.round(Math.min(100, Math.max(0, (v - 3.5) / 0.6 * 100))), est: true, v };
+  }
+  return null;
+}
+function batteryHtml(p) {
+  const b = battery(p);
+  if (!b) return '';
+  const col = b.pct > 50 ? '#16a34a' : b.pct > 20 ? '#f59e0b' : '#BD171E';
+  return `<span style="white-space:nowrap" title="${b.est ? 'Estimé depuis la tension ' + b.v.toFixed(2) + ' V' : 'Niveau batterie (IO 113)'}">
+    🔋 <b style="color:${col}">${b.est ? '≈' : ''}${b.pct} %</b></span>`;
+}
 function popup(d) {
   const p = d.last;
+  const bat = batteryHtml(p);
   return `<b>${label(d)}</b>${d.plate && d.name ? ` — ${d.plate}` : ''}<br>
     ${LABELS[status(p)]} · ${p.speed} km/h<br>
     Contact : ${p.ignition === null ? '—' : p.ignition ? 'ON' : 'OFF'}
-    ${p.ext_voltage ? ` · ${p.ext_voltage.toFixed(1)} V` : ''}<br>
+    ${p.ext_voltage ? ` · Alim. ${p.ext_voltage.toFixed(1)} V` : ''}<br>
+    ${bat ? `Batterie boîtier : ${bat}<br>` : ''}
     <small>${fmtTime(p.ts)} · ${p.satellites} satellites</small>`;
 }
 
@@ -230,7 +250,7 @@ function renderList() {
     li.className = 'veh';
     li.innerHTML = `<span class="dot" style="background:${COLORS[s]}"></span>
       <div><div class="name">${label(d)}</div>
-      <div class="sub">${d.last ? `${LABELS[s]} · ${d.last.speed} km/h · ${ago(d.last.ts)}` : 'Aucune position'}</div></div>`;
+      <div class="sub">${d.last ? `${LABELS[s]} · ${d.last.speed} km/h · ${ago(d.last.ts)}${battery(d.last) ? ' · ' + batteryHtml(d.last) : ''}` : 'Aucune position'}</div></div>`;
     li.onclick = () => { if (d.marker) { map.flyTo(d.marker.getLatLng(), 16); d.marker.openPopup(); } };
     $('list').appendChild(li);
   }
