@@ -347,6 +347,29 @@ async function calcCircuit() {
     style: (f) => ({ color: f.properties.ok ? '#16a34a' : '#BD171E', weight: 7, opacity: 0.9, lineCap: 'butt' }),
   }).addTo(circLayer);
   map.fitBounds(seg.getBounds(), { padding: [40, 40] });
+
+  // Tracé GPS réel du véhicule sur la période (coupé si plus de 3 min sans point)
+  let rows = [];
+  for (let page = 0; ; page++) {
+    const { data, error: e2 } = await sb.from('positions')
+      .select('ts,lat,lng,speed').eq('imei', imei)
+      .gte('ts', from.toISOString()).lt('ts', to.toISOString())
+      .order('ts').range(page * 1000, page * 1000 + 999);
+    if (e2 || !data) break;
+    rows = rows.concat(data);
+    if (data.length < 1000) break;
+  }
+  const lines = [];
+  let cur = [];
+  rows.filter((p) => p.lat || p.lng).forEach((p, i, arr) => {
+    if (i && new Date(p.ts) - new Date(arr[i - 1].ts) > 3 * 60000) { if (cur.length > 1) lines.push(cur); cur = []; }
+    cur.push([p.lat, p.lng]);
+  });
+  if (cur.length > 1) lines.push(cur);
+  if (lines.length) {
+    L.polyline(lines, { color: '#2468B0', weight: 3, opacity: 0.95, dashArray: '6 5' })
+      .bindTooltip('Tracé GPS du véhicule', { sticky: true }).addTo(circLayer);
+  }
   const t = Number(r.taux ?? 0);
   const col = t >= 90 ? '#16a34a' : t >= 70 ? '#f59e0b' : '#BD171E';
   const manque = (r.longueur_m - r.realise_m) / 1000;
@@ -359,7 +382,7 @@ async function calcCircuit() {
       <div class="stat"><b>${r.t_debut ? fmtHour(r.t_debut) : '—'}</b><small>Entrée sur circuit</small></div>
       <div class="stat"><b>${r.t_fin ? fmtHour(r.t_fin) : '—'}</b><small>Dernier passage</small></div>
     </div>
-    <div class="legend"><span><i style="background:#16a34a"></i>Réalisé</span><span><i style="background:#BD171E"></i>Non réalisé</span></div>`;
+    <div class="legend"><span><i style="background:#16a34a"></i>Réalisé</span><span><i style="background:#BD171E"></i>Non réalisé</span><span><i style="background:#2468B0"></i>Tracé GPS</span></div>`;
 }
 
 // ---------- Interface ----------
