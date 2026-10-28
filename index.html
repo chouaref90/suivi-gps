@@ -112,18 +112,16 @@
   <section id="tab-hist" hidden>
     <label>Véhicule<select id="hDev"></select></label>
     <label>Date<input type="date" id="hDate"></label>
+    <div class="row2">
+      <label>De<input type="time" id="hFrom" value="00:00"></label>
+      <label>À<input type="time" id="hTo" value="23:59"></label>
+    </div>
     <button class="btn" id="hGo">Afficher le trajet</button>
     <div id="hStats"></div>
     <input type="range" id="hSlider" min="0" value="0" hidden>
     <div id="hInfo"></div>
   </section>
-  <section id="tab-rep" hidden>
-    <p class="msg">Les taux sont calculés <b>automatiquement chaque matin à 7h</b> pour la veille, selon le planning.</p>
-    <p class="msg">Clique sur une ligne du tableau pour voir le circuit sur la carte.</p>
-    <p class="msg">Le planning (quel véhicule fait quel circuit, quels jours, quels horaires) se modifie dans
-      <b>Rapports → Planning</b>, avec le code administrateur.</p>
-    <p class="msg">Après une modification des horaires, clique sur « Recalculer la période » pour mettre à jour les résultats passés.</p>
-  </section>
+  <section id="tab-rep" hidden></section>
   <section id="tab-circ" hidden>
     <label>Circuit<select id="cCirc"></select></label>
     <label>Véhicule<select id="cDev"></select></label>
@@ -335,8 +333,9 @@ async function loadHistory() {
   const imei = $('hDev').value, day = $('hDate').value;
   if (!imei || !day) return;
   $('hStats').innerHTML = '<p class="msg">Chargement…</p>';
-  const from = new Date(day + 'T00:00:00'), to = new Date(from);
-  to.setDate(to.getDate() + 1);
+  const from = new Date(`${day}T${$('hFrom').value || '00:00'}:00`);
+  const to = new Date(`${day}T${$('hTo').value || '23:59'}:59`);
+  if (to <= from) to.setDate(to.getDate() + 1); // plage qui passe minuit
   let rows = [];
   for (let page = 0; ; page++) {
     const { data, error } = await sb.from('positions')
@@ -352,7 +351,7 @@ async function loadHistory() {
   cursor = null;
   $('hSlider').hidden = true;
   $('hInfo').textContent = '';
-  if (!histPts.length) { $('hStats').innerHTML = '<p class="msg">Aucune donnée pour ce jour.</p>'; return; }
+  if (!histPts.length) { $('hStats').innerHTML = '<p class="msg">Aucune donnée sur cette période.</p>'; return; }
 
   // Distance, vitesse max, temps de conduite
   let km = 0, vmax = 0, driveMin = 0;
