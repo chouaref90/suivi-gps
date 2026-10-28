@@ -19,6 +19,31 @@
   body { display: flex; }
   #side { width: 340px; flex-shrink: 0; display: flex; flex-direction: column; border-right: 1px solid var(--border); background: var(--bg); }
   #map { flex: 1; height: 100%; }
+  [hidden] { display: none !important; }
+  #report { flex: 1; height: 100%; overflow: auto; padding: 20px 24px; background: var(--bg); }
+  #report h2 { margin: 0 0 12px; font-size: 20px; color: var(--accent); }
+  .rep-ctrl { display: flex; flex-wrap: wrap; gap: 8px; align-items: flex-end; margin-bottom: 16px; }
+  .rep-ctrl label { margin: 0; }
+  .rep-ctrl .btn, .rep-ctrl .btn2 { width: auto; padding: 9px 14px; }
+  .btn2 { padding: 9px 14px; border: 1px solid var(--accent); border-radius: 8px; background: transparent; color: var(--accent); font-size: 14px; cursor: pointer; }
+  .kpis { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin-bottom: 16px; }
+  .kpis .stat b { font-size: 24px; }
+  .rep-tabs { display: flex; gap: 6px; margin-bottom: 10px; }
+  .rep-tabs button { padding: 7px 14px; border: 1px solid var(--border); background: var(--bg2); color: var(--text); border-radius: 8px; cursor: pointer; }
+  .rep-tabs button.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  .tbl { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .tbl th { text-align: left; color: var(--muted); font-weight: 600; padding: 8px; border-bottom: 2px solid var(--border); position: sticky; top: 0; background: var(--bg); }
+  .tbl td { padding: 8px; border-bottom: 1px solid var(--border); vertical-align: middle; }
+  .tbl tr.click { cursor: pointer; }
+  .tbl tr.click:hover td { background: var(--bg2); }
+  .mini { display: inline-block; width: 70px; height: 6px; border-radius: 3px; background: var(--bg2); vertical-align: middle; margin-right: 6px; overflow: hidden; }
+  .mini i { display: block; height: 100%; }
+  .badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 12px; font-weight: 600; color: #fff; }
+  .days span { display: inline-block; width: 18px; text-align: center; border-radius: 4px; font-size: 11px; margin-right: 2px; background: var(--bg2); color: var(--muted); }
+  .days span.on { background: var(--accent); color: var(--accent-text); }
+  .chk { display: flex; align-items: center; gap: 8px; color: var(--text); }
+  .chk input { width: auto; margin: 0; }
+  .arrow svg { width: 16px; height: 16px; }
   .brand { background: #ffffff; padding: 14px 16px 10px; text-align: center; border-bottom: 4px solid transparent;
     border-image: linear-gradient(90deg, var(--red) 50%, #2468B0 50%) 1; }
   .brand img { max-width: 230px; width: 100%; height: auto; display: block; margin: 0 auto; }
@@ -28,7 +53,7 @@
   .live { font-size: 12px; color: var(--muted); }
   .live.on { color: var(--move); }
   .tabs { display: flex; gap: 4px; padding: 0 16px 12px; }
-  .tabs button { flex: 1; padding: 8px; border: 1px solid var(--border); background: var(--bg2); color: var(--text); border-radius: 8px; cursor: pointer; font-size: 14px; }
+  .tabs button { flex: 1; padding: 8px 4px; border: 1px solid var(--border); background: var(--bg2); color: var(--text); border-radius: 8px; cursor: pointer; font-size: 14px; }
   .tabs button.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
   section { padding: 0 16px 16px; overflow-y: auto; flex: 1; }
   input, select { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg2); color: var(--text); font-size: 14px; }
@@ -77,6 +102,7 @@
     <button data-tab="live" class="on">Flotte</button>
     <button data-tab="hist">Historique</button>
     <button data-tab="circ">Circuits</button>
+    <button data-tab="rep">Rapports</button>
   </div>
   <section id="tab-live">
     <input id="search" placeholder="Rechercher un véhicule…">
@@ -91,6 +117,12 @@
     <input type="range" id="hSlider" min="0" value="0" hidden>
     <div id="hInfo"></div>
   </section>
+  <section id="tab-rep" hidden>
+    <p class="msg">Les taux sont calculés <b>automatiquement chaque matin à 7h</b> pour la veille, selon le planning.</p>
+    <p class="msg">Clique sur une ligne du tableau pour voir le circuit sur la carte.</p>
+    <p class="msg">Le planning (quel véhicule fait quel circuit, quels jours, quels horaires) se modifie dans
+      <b>Supabase → Table Editor → planning</b>.</p>
+  </section>
   <section id="tab-circ" hidden>
     <label>Circuit<select id="cCirc"></select></label>
     <label>Véhicule<select id="cDev"></select></label>
@@ -100,11 +132,26 @@
       <label>À<input type="time" id="cTo" value="23:59"></label>
     </div>
     <label>Tolérance (m)<input type="number" id="cTol" value="20" min="5" max="100" step="5"></label>
+    <label class="chk"><input type="checkbox" id="cSens"> Respecter le sens de circulation</label>
     <button class="btn" id="cGo">Calculer le taux de réalisation</button>
     <div id="cRes"></div>
   </section>
 </aside>
 <main id="map"></main>
+<div id="report" hidden>
+  <h2>Taux de réalisation des circuits</h2>
+  <div class="rep-ctrl">
+    <label>Du<input type="date" id="rFrom"></label>
+    <label>Au<input type="date" id="rTo"></label>
+    <button class="btn" id="rGo">Afficher</button>
+    <button class="btn2" id="rCalc">Recalculer la période</button>
+    <button class="btn2" id="rCsv">Export Excel (CSV)</button>
+  </div>
+  <div class="kpis" id="rKpis"></div>
+  <div class="rep-tabs"><button class="on" data-r="res">Résultats</button><button data-r="plan">Planning</button></div>
+  <div id="rRes"></div>
+  <div id="rPlan" hidden></div>
+</div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
@@ -371,6 +418,7 @@ function showCircuit() {
   circLayer.clearLayers();
   $('cRes').innerHTML = '';
   if (!c) return;
+  $('cSens').checked = !!c.sens_strict;
   const l = L.geoJSON(c.geojson, { style: { color: '#6b7280', weight: 6, opacity: 0.7, dashArray: '8 6' } }).addTo(circLayer);
   map.fitBounds(l.getBounds(), { padding: [40, 40] });
 }
@@ -379,9 +427,11 @@ async function calcCircuit() {
   if (!c || !imei || !day) return;
   const from = new Date(`${day}T${$('cFrom').value || '00:00'}:00`);
   const to = new Date(`${day}T${$('cTo').value || '23:59'}:59`);
+  if (to <= from) to.setDate(to.getDate() + 1); // shift de nuit
   $('cRes').innerHTML = '<p class="msg">Calcul en cours…</p>';
   const { data: r, error } = await sb.rpc('circuit_realisation', {
     p_circuit: +c.id, p_imei: imei, p_from: from.toISOString(), p_to: to.toISOString(), p_tol: +$('cTol').value || 20,
+    p_sens: $('cSens').checked,
   });
   if (error) { $('cRes').innerHTML = ''; return showErr('Erreur calcul : ' + error.message); }
   circLayer.clearLayers();
@@ -389,6 +439,17 @@ async function calcCircuit() {
     style: (f) => ({ color: f.properties.ok ? '#16a34a' : '#BD171E', weight: 7, opacity: 0.9, lineCap: 'butt' }),
   }).addTo(circLayer);
   map.fitBounds(seg.getBounds(), { padding: [40, 40] });
+
+  // Flèches du sens du circuit (tous les ~100 m) quand le sens est vérifié
+  if (r.sens) {
+    r.segments.features.forEach((ft, i) => {
+      if (i % 4 !== 2) return;
+      const [[x1, y1], [x2, y2]] = ft.geometry.coordinates;
+      L.marker([(y1 + y2) / 2, (x1 + x2) / 2], { interactive: false, icon: L.divIcon({
+        className: 'arrow', iconSize: [16, 16], iconAnchor: [8, 8],
+        html: `<svg viewBox="0 0 16 16" style="transform:rotate(${ft.properties.az}deg)"><path d="M8 1 L14 14 L8 10.5 L2 14 Z" fill="#111827" stroke="#fff" stroke-width="1.2"/></svg>` }) }).addTo(circLayer);
+    });
+  }
 
   // Tracé GPS réel du véhicule sur la période (coupé si plus de 3 min sans point)
   let rows = [];
@@ -424,18 +485,130 @@ async function calcCircuit() {
       <div class="stat"><b>${r.t_debut ? fmtHour(r.t_debut) : '—'}</b><small>Entrée sur circuit</small></div>
       <div class="stat"><b>${r.t_fin ? fmtHour(r.t_fin) : '—'}</b><small>Dernier passage</small></div>
     </div>
-    <div class="legend"><span><i style="background:#16a34a"></i>Réalisé</span><span><i style="background:#BD171E"></i>Non réalisé</span><span><i style="background:#2468B0"></i>Tracé GPS</span></div>`;
+    <div class="legend"><span><i style="background:#16a34a"></i>Réalisé</span><span><i style="background:#BD171E"></i>Non réalisé</span><span><i style="background:#2468B0"></i>Tracé GPS</span></div>
+    ${r.sens ? '<p class="msg">▲ Sens du circuit vérifié : un passage dans le mauvais sens ne compte pas.</p>' : ''}`;
+}
+
+// ---------- Rapports ----------
+const isoDay = (d) => new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+const fmtDay = (s) => new Date(s + 'T12:00:00').toLocaleDateString('fr-FR', { weekday: 'short', day: '2-digit', month: '2-digit' });
+const tauxCol = (t, seuil) => (t >= (seuil ?? 90) ? '#16a34a' : t >= 70 ? '#f59e0b' : '#BD171E');
+let repRows = [], repLoaded = false;
+
+async function loadReport() {
+  repLoaded = true;
+  const f = $('rFrom').value, t = $('rTo').value;
+  $('rRes').innerHTML = '<p class="msg">Chargement…</p>';
+  const { data, error } = await sb.from('realisations_list').select('*')
+    .gte('jour', f).lte('jour', t).order('jour', { ascending: false }).order('circuit_code');
+  if (error) { $('rRes').innerHTML = ''; return showErr('Erreur rapports : ' + error.message); }
+  repRows = data;
+  const lon = data.reduce((a, r) => a + Number(r.longueur_m || 0), 0);
+  const rea = data.reduce((a, r) => a + Number(r.realise_m || 0), 0);
+  const moy = lon ? (100 * rea / lon) : 0;
+  const nc = data.filter((r) => !r.conforme).length;
+  $('rKpis').innerHTML = `
+    <div class="stat"><b style="color:${tauxCol(moy)}">${moy.toFixed(1)} %</b><small>Taux moyen (pondéré km)</small></div>
+    <div class="stat"><b>${data.length}</b><small>Circuits planifiés</small></div>
+    <div class="stat"><b style="color:${nc ? '#BD171E' : '#16a34a'}">${nc}</b><small>Non conformes (sous le seuil)</small></div>
+    <div class="stat"><b>${((lon - rea) / 1000).toFixed(1)} km</b><small>Non réalisés</small></div>`;
+  if (!data.length) {
+    $('rRes').innerHTML = '<p class="msg">Aucun résultat sur cette période. Vérifie le planning, puis clique sur « Recalculer la période ».</p>';
+    return;
+  }
+  $('rRes').innerHTML = `<table class="tbl"><thead><tr>
+      <th>Date</th><th>Circuit</th><th>Véhicule</th><th>Shift</th><th>Passage</th><th>Km réalisés</th><th>Taux</th><th>Statut</th>
+    </tr></thead><tbody>${data.map((r, i) => {
+      const t = Number(r.taux || 0), col = tauxCol(t, r.seuil);
+      return `<tr class="click" data-i="${i}">
+        <td>${fmtDay(r.jour)}</td>
+        <td><b>${r.circuit_code}</b>${r.circuit_name && r.circuit_name !== r.circuit_code ? '<br><small>' + r.circuit_name + '</small>' : ''}</td>
+        <td>${r.vehicule || r.plate || r.imei}</td>
+        <td>${r.shift || ''}<br><small>${(r.heure_debut || '').slice(0, 5)}–${(r.heure_fin || '').slice(0, 5)}</small></td>
+        <td>${r.t_debut ? fmtHour(r.t_debut) + '–' + fmtHour(r.t_fin) : '<small>aucun passage</small>'}</td>
+        <td>${(r.realise_m / 1000).toFixed(2)} / ${(r.longueur_m / 1000).toFixed(2)}</td>
+        <td><span class="mini"><i style="width:${t}%;background:${col}"></i></span><b style="color:${col}">${t} %</b></td>
+        <td><span class="badge" style="background:${r.conforme ? '#16a34a' : '#BD171E'}">${r.conforme ? 'Conforme' : 'Non conforme'}</span>
+          <br><small>seuil ${r.seuil ?? 90} %${r.sens_strict ? ' · sens' : ''}</small></td>
+      </tr>`; }).join('')}</tbody></table>`;
+  $('rRes').querySelectorAll('tr.click').forEach((tr) => tr.onclick = () => openInCircuits(repRows[+tr.dataset.i]));
+}
+
+function openInCircuits(r) {
+  document.querySelector('.tabs button[data-tab="circ"]').click();
+  $('cCirc').value = r.circuit_id;
+  showCircuit();
+  if (![...$('cDev').options].some((o) => o.value === r.imei)) $('cDev').insertAdjacentHTML('beforeend', `<option value="${r.imei}">${r.imei}</option>`);
+  $('cDev').value = r.imei;
+  $('cDate').value = r.jour;
+  $('cFrom').value = (r.heure_debut || '00:00').slice(0, 5);
+  $('cTo').value = (r.heure_fin || '23:59').slice(0, 5);
+  $('cTol').value = r.tolerance || 20;
+  $('cSens').checked = !!r.sens_strict;
+  calcCircuit();
+}
+
+async function recalcReport() {
+  const d0 = new Date($('rFrom').value + 'T12:00:00'), d1 = new Date($('rTo').value + 'T12:00:00');
+  const days = [];
+  for (let d = new Date(d0); d <= d1 && days.length < 62; d.setDate(d.getDate() + 1)) days.push(isoDay(d));
+  for (let i = 0; i < days.length; i++) {
+    $('rRes').innerHTML = `<p class="msg">Calcul du ${fmtDay(days[i])} (${i + 1}/${days.length})…</p>`;
+    const { error } = await sb.rpc('calculer_realisations', { p_date: days[i] });
+    if (error) return showErr('Erreur calcul : ' + error.message);
+  }
+  loadReport();
+}
+
+function exportCsv() {
+  if (!repRows.length) return;
+  const head = ['Date', 'Circuit', 'Nom circuit', 'Véhicule', 'IMEI', 'Shift', 'Début planifié', 'Fin planifiée',
+    '1er passage', 'Dernier passage', 'Longueur (km)', 'Réalisé (km)', 'Taux (%)', 'Seuil (%)', 'Statut'];
+  const lines = repRows.map((r) => [r.jour, r.circuit_code, r.circuit_name || '', r.vehicule || r.plate || '', r.imei, r.shift || '',
+    (r.heure_debut || '').slice(0, 5), (r.heure_fin || '').slice(0, 5),
+    r.t_debut ? fmtHour(r.t_debut) : '', r.t_fin ? fmtHour(r.t_fin) : '',
+    (r.longueur_m / 1000).toFixed(3).replace('.', ','), (r.realise_m / 1000).toFixed(3).replace('.', ','),
+    String(r.taux).replace('.', ','), r.seuil ?? 90, r.conforme ? 'Conforme' : 'Non conforme']);
+  const csv = '﻿' + [head, ...lines].map((l) => l.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\r\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `taux_realisation_${$('rFrom').value}_${$('rTo').value}.csv`;
+  a.click();
+}
+
+async function loadPlanning() {
+  $('rPlan').innerHTML = '<p class="msg">Chargement…</p>';
+  const { data, error } = await sb.from('planning_list').select('*').order('circuit_code');
+  if (error) { $('rPlan').innerHTML = ''; return showErr('Erreur planning : ' + error.message); }
+  const J = [['lun', 'L'], ['mar', 'M'], ['mer', 'M'], ['jeu', 'J'], ['ven', 'V'], ['sam', 'S'], ['dim', 'D']];
+  $('rPlan').innerHTML = (data.length ? `<table class="tbl"><thead><tr>
+      <th>Circuit</th><th>Véhicule</th><th>Shift</th><th>Horaires</th><th>Jours</th><th>Tolérance</th><th>Actif</th>
+    </tr></thead><tbody>${data.map((p) => `<tr>
+      <td><b>${p.circuit_code}</b></td>
+      <td>${p.vehicule || p.plate || p.imei}</td>
+      <td>${p.shift || ''}</td>
+      <td>${p.heure_debut.slice(0, 5)} → ${p.heure_fin.slice(0, 5)}${p.heure_fin < p.heure_debut ? ' (J+1)' : ''}</td>
+      <td class="days">${J.map(([k, l]) => `<span class="${p[k] ? 'on' : ''}">${l}</span>`).join('')}</td>
+      <td>${p.tolerance} m</td>
+      <td>${p.actif ? '✅' : '—'}</td></tr>`).join('')}</tbody></table>`
+    : '<p class="msg">Aucune affectation pour l\'instant.</p>') +
+    '<p class="msg">Pour ajouter ou modifier une affectation : Supabase → Table Editor → <b>planning</b>.</p>';
 }
 
 // ---------- Interface ----------
 document.querySelectorAll('.tabs button').forEach((b) => b.onclick = () => {
   document.querySelectorAll('.tabs button').forEach((x) => x.classList.toggle('on', x === b));
   const tab = b.dataset.tab;
-  const layers = { live: fleetLayer, hist: histLayer, circ: circLayer };
+  const layers = { live: fleetLayer, hist: histLayer, circ: circLayer, rep: null };
   for (const k in layers) {
     $('tab-' + k).hidden = k !== tab;
+    if (!layers[k]) continue;
     if (k === tab) layers[k].addTo(map); else map.removeLayer(layers[k]);
   }
+  $('map').hidden = tab === 'rep';
+  $('report').hidden = tab !== 'rep';
+  if (tab === 'rep') { if (!repLoaded) loadReport(); }
+  else map.invalidateSize();
   if (tab === 'circ' && !circLayer.getLayers().length) showCircuit();
 });
 $('search').oninput = renderList;
@@ -444,6 +617,20 @@ $('hSlider').oninput = (e) => moveCursor(+e.target.value);
 $('hDate').value = $('cDate').value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
 $('cCirc').onchange = showCircuit;
 $('cGo').onclick = calcCircuit;
+{
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  const w = new Date(); w.setDate(w.getDate() - 7);
+  $('rFrom').value = isoDay(w); $('rTo').value = isoDay(y);
+}
+$('rGo').onclick = loadReport;
+$('rCalc').onclick = recalcReport;
+$('rCsv').onclick = exportCsv;
+document.querySelectorAll('.rep-tabs button').forEach((b) => b.onclick = () => {
+  document.querySelectorAll('.rep-tabs button').forEach((x) => x.classList.toggle('on', x === b));
+  $('rRes').hidden = b.dataset.r !== 'res';
+  $('rPlan').hidden = b.dataset.r !== 'plan';
+  if (b.dataset.r === 'plan') loadPlanning();
+});
 
 // ---------- Démarrage ----------
 if (SUPABASE_ANON_KEY.startsWith('COLLE_ICI')) {
