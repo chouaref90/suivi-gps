@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Suivi GPS</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<style>
+  :root {
+    --bg: #ffffff; --bg2: #f4f5f7; --text: #1f2937; --muted: #6b7280; --border: #e5e7eb;
+    --accent: #0f766e; --accent-text: #ffffff;
+    --move: #16a34a; --idle: #f59e0b; --stop: #2563eb; --off: #9ca3af;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root { --bg: #16181d; --bg2: #1f2229; --text: #e5e7eb; --muted: #9ca3af; --border: #2e323b; --accent: #14b8a6; --accent-text: #0b1515; }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; background: var(--bg); color: var(--text); }
+  body { display: flex; }
+  #side { width: 340px; flex-shrink: 0; display: flex; flex-direction: column; border-right: 1px solid var(--border); background: var(--bg); }
+  #map { flex: 1; height: 100%; }
+  header { padding: 16px 16px 8px; display: flex; align-items: center; justify-content: space-between; }
+  h1 { font-size: 18px; margin: 0; }
+  .live { font-size: 12px; color: var(--muted); }
+  .live.on { color: var(--move); }
+  .tabs { display: flex; gap: 4px; padding: 0 16px 12px; }
+  .tabs button { flex: 1; padding: 8px; border: 1px solid var(--border); background: var(--bg2); color: var(--text); border-radius: 8px; cursor: pointer; font-size: 14px; }
+  .tabs button.on { background: var(--accent); color: var(--accent-text); border-color: var(--accent); }
+  section { padding: 0 16px 16px; overflow-y: auto; flex: 1; }
+  input, select { width: 100%; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--bg2); color: var(--text); font-size: 14px; }
+  label { display: block; font-size: 13px; color: var(--muted); margin-bottom: 10px; }
+  label input, label select { margin-top: 4px; }
+  .btn { width: 100%; padding: 10px; border: 0; border-radius: 8px; background: var(--accent); color: var(--accent-text); font-size: 14px; cursor: pointer; }
+  .summary { display: flex; gap: 8px; margin: 12px 0; flex-wrap: wrap; font-size: 12px; color: var(--muted); }
+  .summary span { display: inline-flex; align-items: center; gap: 4px; }
+  ul { list-style: none; padding: 0; margin: 0; }
+  li.veh { padding: 10px; border-radius: 8px; cursor: pointer; display: flex; gap: 10px; align-items: flex-start; }
+  li.veh:hover { background: var(--bg2); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; margin-top: 5px; flex-shrink: 0; }
+  .name { font-weight: 600; font-size: 14px; }
+  .sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 14px 0; }
+  .stat { background: var(--bg2); border-radius: 8px; padding: 10px; }
+  .stat b { display: block; font-size: 18px; }
+  .stat small { color: var(--muted); font-size: 12px; }
+  .msg { font-size: 13px; color: var(--muted); margin: 12px 0; }
+  .err { background: #fee2e2; color: #991b1b; padding: 10px; border-radius: 8px; font-size: 13px; margin: 0 16px 12px; }
+  #hInfo { font-size: 13px; margin-top: 8px; }
+  .vicon svg { width: 30px; height: 30px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.4)); }
+  .leaflet-popup-content { font-size: 13px; line-height: 1.5; }
+  @media (max-width: 700px) {
+    body { flex-direction: column; }
+    #side { width: 100%; height: 45%; border-right: 0; border-bottom: 1px solid var(--border); }
+    #map { height: 55%; }
+  }
+</style>
+</head>
+<body>
+<aside id="side">
+  <header><h1>Suivi GPS</h1><span id="live" class="live">● Connexion…</span></header>
+  <div id="err" class="err" hidden></div>
+  <div class="tabs">
+    <button data-tab="live" class="on">Flotte</button>
+    <button data-tab="hist">Historique</button>
+  </div>
+  <section id="tab-live">
+    <input id="search" placeholder="Rechercher un véhicule…">
+    <div class="summary" id="summary"></div>
+    <ul id="list"></ul>
+  </section>
+  <section id="tab-hist" hidden>
+    <label>Véhicule<select id="hDev"></select></label>
+    <label>Date<input type="date" id="hDate"></label>
+    <button class="btn" id="hGo">Afficher le trajet</button>
+    <div id="hStats"></div>
+    <input type="range" id="hSlider" min="0" value="0" hidden>
+    <div id="hInfo"></div>
+  </section>
+</aside>
+<main id="map"></main>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+// ======= CONFIGURATION =======
+const SUPABASE_URL = 'https://zhhpkuxkqzxttdaqwpyx.supabase.co';
+const SUPABASE_ANON_KEY = 'COLLE_ICI_LA_CLE_ANON';   // clé anon / publishable (PAS la service_role)
+const OFFLINE_MIN = 15;                              // minutes sans données => hors ligne
+// =============================
+
+const $ = (id) => document.getElementById(id);
+const COLORS = { move: 'var(--move)', idle: 'var(--idle)', stop: 'var(--stop)', off: 'var(--off)' };
+const LABELS = { move: 'En mouvement', idle: 'Moteur allumé', stop: "À l'arrêt", off: 'Hors ligne' };
+const HEX = { move: '#16a34a', idle: '#f59e0b', stop: '#2563eb', off: '#9ca3af' };
+
+function showErr(t) { $('err').textContent = t; $('err').hidden = false; }
+
+// ---------- Carte ----------
+const map = L.map('map').setView([34.0, -6.83], 12);
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 19, attribution: '© OpenStreetMap',
+}).addTo(map);
+const fleetLayer = L.layerGroup().addTo(map);
+const histLayer = L.layerGroup();
+
+// ---------- Utilitaires ----------
+const devices = new Map(); // imei -> { imei, name, plate, last, marker }
+const label = (d) => d.name || d.plate || d.imei;
+const fmtTime = (ts) => new Date(ts).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'medium' });
+const fmtHour = (ts) => new Date(ts).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+
+function status(p) {
+  if (!p) return 'off';
+  if ((Date.now() - new Date(p.ts)) / 60000 > OFFLINE_MIN) return 'off';
+  if (p.speed > 3) return 'move';
+  if (p.ignition) return 'idle';
+  return 'stop';
+}
+function ago(ts) {
+  const m = Math.round((Date.now() - new Date(ts)) / 60000);
+  if (m < 1) return "à l'instant";
+  if (m < 60) return `il y a ${m} min`;
+  if (m < 1440) return `il y a ${Math.round(m / 60)} h`;
+  return fmtTime(ts);
+}
+function dist(a, b) {
+  const R = 6371, r = Math.PI / 180;
+  const dLat = (b.lat - a.lat) * r, dLng = (b.lng - a.lng) * r;
+  const x = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * r) * Math.cos(b.lat * r) * Math.sin(dLng / 2) ** 2;
+  return 2 * R * Math.asin(Math.sqrt(x));
+}
+function durTxt(min) {
+  const h = Math.floor(min / 60), m = Math.round(min % 60);
+  return h ? `${h} h ${String(m).padStart(2, '0')}` : `${m} min`;
+}
+function icon(p) {
+  const s = status(p);
+  const arrow = s === 'move' ? '<path d="M15 7 L20 18 L15 15 L10 18 Z" fill="#fff"/>' : '';
+  return L.divIcon({
+    className: 'vicon', iconSize: [30, 30], iconAnchor: [15, 15],
+    html: `<svg viewBox="0 0 30 30" style="transform:rotate(${p.angle || 0}deg)"><circle cx="15" cy="15" r="11" fill="${HEX[s]}" stroke="#fff" stroke-width="2.5"/>${arrow}</svg>`,
+  });
+}
+function popup(d) {
+  const p = d.last;
+  return `<b>${label(d)}</b>${d.plate && d.name ? ` — ${d.plate}` : ''}<br>
+    ${LABELS[status(p)]} · ${p.speed} km/h<br>
+    Contact : ${p.ignition === null ? '—' : p.ignition ? 'ON' : 'OFF'}
+    ${p.ext_voltage ? ` · ${p.ext_voltage.toFixed(1)} V` : ''}<br>
+    <small>${fmtTime(p.ts)} · ${p.satellites} satellites</small>`;
+}
+
+// ---------- Flotte en temps réel ----------
+function upsertDevice(row) {
+  const d = devices.get(row.imei) || { imei: row.imei };
+  if (row.name !== undefined) d.name = row.name;
+  if (row.plate !== undefined) d.plate = row.plate;
+  devices.set(row.imei, d);
+  return d;
+}
+function updatePos(p) {
+  if (!p.lat && !p.lng) return; // pas de fix GPS
+  const d = upsertDevice({ imei: p.imei, ...(p.name !== undefined ? { name: p.name, plate: p.plate } : {}) });
+  if (d.last && new Date(p.ts) < new Date(d.last.ts)) return;
+  d.last = p;
+  if (!d.marker) d.marker = L.marker([p.lat, p.lng], { icon: icon(p) }).addTo(fleetLayer);
+  d.marker.setLatLng([p.lat, p.lng]).setIcon(icon(p)).bindPopup(popup(d));
+}
+function renderList() {
+  const q = $('search').value.toLowerCase();
+  const list = [...devices.values()].sort((a, b) => label(a).localeCompare(label(b)));
+  const counts = { move: 0, idle: 0, stop: 0, off: 0 };
+  $('list').innerHTML = '';
+  for (const d of list) {
+    const s = status(d.last);
+    counts[s]++;
+    if (d.marker) d.marker.setIcon(icon(d.last)).setPopupContent(popup(d));
+    if (q && !`${label(d)} ${d.plate || ''} ${d.imei}`.toLowerCase().includes(q)) continue;
+    const li = document.createElement('li');
+    li.className = 'veh';
+    li.innerHTML = `<span class="dot" style="background:${COLORS[s]}"></span>
+      <div><div class="name">${label(d)}</div>
+      <div class="sub">${d.last ? `${LABELS[s]} · ${d.last.speed} km/h · ${ago(d.last.ts)}` : 'Aucune position'}</div></div>`;
+    li.onclick = () => { if (d.marker) { map.flyTo(d.marker.getLatLng(), 16); d.marker.openPopup(); } };
+    $('list').appendChild(li);
+  }
+  $('summary').innerHTML = Object.keys(counts)
+    .map((k) => `<span><span class="dot" style="background:${COLORS[k]};margin:0"></span>${LABELS[k]} : ${counts[k]}</span>`).join('');
+}
+function fillHistSelect() {
+  const cur = $('hDev').value;
+  $('hDev').innerHTML = [...devices.values()].map((d) => `<option value="${d.imei}">${label(d)}</option>`).join('');
+  if (cur) $('hDev').value = cur;
+}
+
+let sb;
+async function loadFleet(first) {
+  const [r1, r2] = await Promise.all([sb.from('devices').select('*'), sb.from('last_positions').select('*')]);
+  if (r1.error || r2.error) return showErr('Erreur Supabase : ' + (r1.error || r2.error).message);
+  r1.data.forEach(upsertDevice);
+  r2.data.forEach(updatePos);
+  renderList();
+  fillHistSelect();
+  if (first) {
+    const pts = [...devices.values()].filter((d) => d.last).map((d) => [d.last.lat, d.last.lng]);
+    if (pts.length === 1) map.setView(pts[0], 15);
+    else if (pts.length > 1) map.fitBounds(pts, { padding: [40, 40] });
+  }
+}
+
+// ---------- Historique ----------
+let histPts = [], cursor = null;
+async function loadHistory() {
+  const imei = $('hDev').value, day = $('hDate').value;
+  if (!imei || !day) return;
+  $('hStats').innerHTML = '<p class="msg">Chargement…</p>';
+  const from = new Date(day + 'T00:00:00'), to = new Date(from);
+  to.setDate(to.getDate() + 1);
+  let rows = [];
+  for (let page = 0; ; page++) {
+    const { data, error } = await sb.from('positions')
+      .select('ts,lat,lng,speed,ignition,angle')
+      .eq('imei', imei).gte('ts', from.toISOString()).lt('ts', to.toISOString())
+      .order('ts').range(page * 1000, page * 1000 + 999);
+    if (error) return showErr('Erreur Supabase : ' + error.message);
+    rows = rows.concat(data);
+    if (data.length < 1000) break;
+  }
+  histPts = rows.filter((p) => p.lat || p.lng);
+  histLayer.clearLayers();
+  cursor = null;
+  $('hSlider').hidden = true;
+  $('hInfo').textContent = '';
+  if (!histPts.length) { $('hStats').innerHTML = '<p class="msg">Aucune donnée pour ce jour.</p>'; return; }
+
+  // Distance, vitesse max, temps de conduite
+  let km = 0, vmax = 0, driveMin = 0;
+  for (let i = 1; i < histPts.length; i++) {
+    const a = histPts[i - 1], b = histPts[i];
+    const dt = (new Date(b.ts) - new Date(a.ts)) / 60000;
+    if (a.speed > 3 || b.speed > 3) km += dist(a, b);
+    if (a.speed > 3) driveMin += Math.min(dt, 5);
+  }
+  histPts.forEach((p) => { vmax = Math.max(vmax, p.speed); });
+
+  // Arrêts de 5 min ou plus
+  const stops = [];
+  for (let i = 0; i < histPts.length;) {
+    if (histPts[i].speed <= 3) {
+      let j = i;
+      while (j + 1 < histPts.length && histPts[j + 1].speed <= 3) j++;
+      const end = j + 1 < histPts.length ? histPts[j + 1].ts : histPts[j].ts;
+      const dur = (new Date(end) - new Date(histPts[i].ts)) / 60000;
+      if (dur >= 5) stops.push({ p: histPts[i], from: histPts[i].ts, to: end, dur });
+      i = j + 1;
+    } else i++;
+  }
+
+  const line = L.polyline(histPts.map((p) => [p.lat, p.lng]), { color: '#0f766e', weight: 4 }).addTo(histLayer);
+  const first = histPts[0], last = histPts[histPts.length - 1];
+  L.circleMarker([first.lat, first.lng], { radius: 8, color: '#fff', fillColor: '#16a34a', fillOpacity: 1, weight: 2 })
+    .bindPopup(`Départ ${fmtHour(first.ts)}`).addTo(histLayer);
+  L.circleMarker([last.lat, last.lng], { radius: 8, color: '#fff', fillColor: '#dc2626', fillOpacity: 1, weight: 2 })
+    .bindPopup(`Arrivée ${fmtHour(last.ts)}`).addTo(histLayer);
+  stops.forEach((s, k) => L.circleMarker([s.p.lat, s.p.lng], { radius: 7, color: '#fff', fillColor: '#2563eb', fillOpacity: 1, weight: 2 })
+    .bindPopup(`Arrêt ${k + 1}<br>${fmtHour(s.from)} → ${fmtHour(s.to)}<br>${durTxt(s.dur)}`).addTo(histLayer));
+  map.fitBounds(line.getBounds(), { padding: [40, 40] });
+
+  $('hStats').innerHTML = `<div class="stats">
+      <div class="stat"><b>${km.toFixed(1)} km</b><small>Distance</small></div>
+      <div class="stat"><b>${durTxt(driveMin)}</b><small>Temps de conduite</small></div>
+      <div class="stat"><b>${vmax} km/h</b><small>Vitesse max</small></div>
+      <div class="stat"><b>${stops.length}</b><small>Arrêts ≥ 5 min</small></div>
+    </div><p class="msg">${fmtHour(first.ts)} → ${fmtHour(last.ts)} · ${histPts.length} points</p>`;
+  $('hSlider').max = histPts.length - 1;
+  $('hSlider').value = 0;
+  $('hSlider').hidden = false;
+  moveCursor(0);
+}
+function moveCursor(i) {
+  const p = histPts[i];
+  if (!p) return;
+  if (!cursor) cursor = L.marker([p.lat, p.lng], { icon: icon({ ...p, ts: new Date().toISOString(), speed: Math.max(p.speed, 4) }) }).addTo(histLayer);
+  cursor.setLatLng([p.lat, p.lng]).setIcon(icon({ ...p, ts: new Date().toISOString(), speed: Math.max(p.speed, 4) }));
+  $('hInfo').textContent = `${fmtTime(p.ts)} · ${p.speed} km/h · contact ${p.ignition ? 'ON' : 'OFF'}`;
+}
+
+// ---------- Interface ----------
+document.querySelectorAll('.tabs button').forEach((b) => b.onclick = () => {
+  document.querySelectorAll('.tabs button').forEach((x) => x.classList.toggle('on', x === b));
+  const hist = b.dataset.tab === 'hist';
+  $('tab-live').hidden = hist;
+  $('tab-hist').hidden = !hist;
+  if (hist) { map.removeLayer(fleetLayer); histLayer.addTo(map); }
+  else { map.removeLayer(histLayer); fleetLayer.addTo(map); }
+});
+$('search').oninput = renderList;
+$('hGo').onclick = loadHistory;
+$('hSlider').oninput = (e) => moveCursor(+e.target.value);
+$('hDate').value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+
+// ---------- Démarrage ----------
+if (SUPABASE_ANON_KEY.startsWith('COLLE_ICI')) {
+  showErr('Configure SUPABASE_ANON_KEY en haut du fichier index.html.');
+  $('live').textContent = '● Non configuré';
+} else {
+  sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+  loadFleet(true);
+  sb.channel('positions-live')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'positions' }, (payload) => {
+      updatePos(payload.new);
+      renderList();
+      if (!$('hDev').options.length || ![...$('hDev').options].some((o) => o.value === payload.new.imei)) fillHistSelect();
+    })
+    .subscribe((st) => {
+      const on = st === 'SUBSCRIBED';
+      $('live').textContent = on ? '● Temps réel' : '● Reconnexion…';
+      $('live').classList.toggle('on', on);
+    });
+  setInterval(renderList, 60000);          // met à jour « il y a X min » et les statuts
+  setInterval(() => loadFleet(false), 300000); // resynchronisation toutes les 5 min
+}
+</script>
+</body>
+</html>
