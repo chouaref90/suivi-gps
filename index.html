@@ -121,7 +121,8 @@
     <p class="msg">Les taux sont calculés <b>automatiquement chaque matin à 7h</b> pour la veille, selon le planning.</p>
     <p class="msg">Clique sur une ligne du tableau pour voir le circuit sur la carte.</p>
     <p class="msg">Le planning (quel véhicule fait quel circuit, quels jours, quels horaires) se modifie dans
-      <b>Supabase → Table Editor → planning</b>.</p>
+      <b>Rapports → Planning</b>, avec le code administrateur.</p>
+    <p class="msg">Après une modification des horaires, clique sur « Recalculer la période » pour mettre à jour les résultats passés.</p>
   </section>
   <section id="tab-circ" hidden>
     <label>Circuit<select id="cCirc"></select></label>
@@ -576,23 +577,86 @@ function exportCsv() {
   a.click();
 }
 
+const JOURS = [['lun', 'L'], ['mar', 'M'], ['mer', 'M'], ['jeu', 'J'], ['ven', 'V'], ['sam', 'S'], ['dim', 'D']];
+let planRows = [];
+const getPin = () => { try { return localStorage.getItem('sos_pin') || ''; } catch { return ''; } };
+const setPin = (v) => { try { localStorage.setItem('sos_pin', v); } catch {} };
+
 async function loadPlanning() {
   $('rPlan').innerHTML = '<p class="msg">Chargement…</p>';
   const { data, error } = await sb.from('planning_list').select('*').order('circuit_code');
   if (error) { $('rPlan').innerHTML = ''; return showErr('Erreur planning : ' + error.message); }
-  const J = [['lun', 'L'], ['mar', 'M'], ['mer', 'M'], ['jeu', 'J'], ['ven', 'V'], ['sam', 'S'], ['dim', 'D']];
-  $('rPlan').innerHTML = (data.length ? `<table class="tbl"><thead><tr>
-      <th>Circuit</th><th>Véhicule</th><th>Shift</th><th>Horaires</th><th>Jours</th><th>Tolérance</th><th>Actif</th>
-    </tr></thead><tbody>${data.map((p) => `<tr>
+  planRows = data;
+  $('rPlan').innerHTML = `
+    <div style="margin-bottom:10px"><button class="btn" style="width:auto;padding:9px 14px" id="pAdd">+ Ajouter une affectation</button></div>
+    <div id="planForm"></div>
+    ${data.length ? `<table class="tbl"><thead><tr>
+      <th>Circuit</th><th>Véhicule</th><th>Shift</th><th>Horaires</th><th>Jours</th><th>Tolérance</th><th>Actif</th><th></th>
+    </tr></thead><tbody>${data.map((p, i) => `<tr${p.actif ? '' : ' style="opacity:.5"'}>
       <td><b>${p.circuit_code}</b></td>
       <td>${p.vehicule || p.plate || p.imei}</td>
       <td>${p.shift || ''}</td>
       <td>${p.heure_debut.slice(0, 5)} → ${p.heure_fin.slice(0, 5)}${p.heure_fin < p.heure_debut ? ' (J+1)' : ''}</td>
-      <td class="days">${J.map(([k, l]) => `<span class="${p[k] ? 'on' : ''}">${l}</span>`).join('')}</td>
+      <td class="days">${JOURS.map(([k, l]) => `<span class="${p[k] ? 'on' : ''}">${l}</span>`).join('')}</td>
       <td>${p.tolerance} m</td>
-      <td>${p.actif ? '✅' : '—'}</td></tr>`).join('')}</tbody></table>`
-    : '<p class="msg">Aucune affectation pour l\'instant.</p>') +
-    '<p class="msg">Pour ajouter ou modifier une affectation : Supabase → Table Editor → <b>planning</b>.</p>';
+      <td>${p.actif ? '✅' : '—'}</td>
+      <td><button class="btn2" style="padding:5px 10px" data-edit="${i}">Modifier</button></td></tr>`).join('')}</tbody></table>`
+    : '<p class="msg">Aucune affectation pour l\'instant.</p>'}`;
+  $('pAdd').onclick = () => planForm(null);
+  $('rPlan').querySelectorAll('[data-edit]').forEach((b) => b.onclick = () => planForm(planRows[+b.dataset.edit]));
+}
+
+function planForm(p) {
+  const n = !p;
+  p = p || { circuit_code: '', imei: '', shift: '', heure_debut: '06:00', heure_fin: '14:00',
+    lun: true, mar: true, mer: true, jeu: true, ven: true, sam: true, dim: false, tolerance: 20, actif: true };
+  const cOpts = [...circuits.values()].map((c) => `<option value="${c.code}"${c.code === p.circuit_code ? ' selected' : ''}>${c.code}${c.name && c.name !== c.code ? ' — ' + c.name : ''}</option>`).join('');
+  const dOpts = [...devices.values()].map((d) => `<option value="${d.imei}"${d.imei === p.imei ? ' selected' : ''}>${label(d)}</option>`).join('');
+  $('planForm').innerHTML = `
+    <div class="stat" style="padding:16px;margin-bottom:16px;max-width:760px">
+      <b style="font-size:16px;margin-bottom:10px">${n ? 'Nouvelle affectation' : 'Modifier l\'affectation'}</b>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px">
+        <label>Circuit<select id="fCirc">${cOpts}</select></label>
+        <label>Véhicule<select id="fDev">${dOpts}</select></label>
+        <label>Shift<input id="fShift" value="${p.shift || ''}" placeholder="Matin, Nuit…"></label>
+        <label>Début<input type="time" id="fDeb" value="${p.heure_debut.slice(0, 5)}"></label>
+        <label>Fin<input type="time" id="fFin" value="${p.heure_fin.slice(0, 5)}"></label>
+        <label>Tolérance (m)<input type="number" id="fTol" value="${p.tolerance}" min="5" max="100" step="5"></label>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin:6px 0 12px">
+        ${JOURS.map(([k], i) => `<label class="chk"><input type="checkbox" id="f_${k}"${p[k] ? ' checked' : ''}>${['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'][i]}</label>`).join('')}
+        <label class="chk"><input type="checkbox" id="fActif"${p.actif ? ' checked' : ''}>Actif</label>
+      </div>
+      <p class="msg" style="margin:0 0 10px">Si l'heure de fin est avant l'heure de début, le shift se termine le lendemain.</p>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:flex-end">
+        <label style="margin:0;max-width:160px">Code admin<input type="password" id="fPin" value="${getPin()}"></label>
+        <button class="btn" style="width:auto;padding:9px 16px" id="fSave">Enregistrer</button>
+        <button class="btn2" id="fCancel">Annuler</button>
+        ${n ? '' : '<button class="btn2" style="border-color:#BD171E;color:#BD171E" id="fDel">Supprimer</button>'}
+      </div>
+      <div id="fMsg" class="msg"></div>
+    </div>`;
+  $('planForm').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  $('fCancel').onclick = () => { $('planForm').innerHTML = ''; };
+  $('fSave').onclick = async () => {
+    const body = { id: n ? '' : String(p.id), circuit_code: $('fCirc').value, imei: $('fDev').value, shift: $('fShift').value,
+      heure_debut: $('fDeb').value, heure_fin: $('fFin').value, tolerance: +$('fTol').value || 20, actif: $('fActif').checked };
+    JOURS.forEach(([k]) => { body[k] = $('f_' + k).checked; });
+    if (!body.circuit_code || !body.imei) { $('fMsg').textContent = 'Choisis un circuit et un véhicule.'; return; }
+    $('fMsg').textContent = 'Enregistrement…';
+    const { error } = await sb.rpc('planning_save', { p_pin: $('fPin').value, p: body });
+    if (error) { $('fMsg').innerHTML = `<span style="color:#BD171E">${error.message}</span>`; return; }
+    setPin($('fPin').value);
+    loadPlanning();
+  };
+  if (!n) $('fDel').onclick = async () => {
+    const { data, error } = await sb.rpc('planning_delete', { p_pin: $('fPin').value, p_id: p.id });
+    if (error) { $('fMsg').innerHTML = `<span style="color:#BD171E">${error.message}</span>`; return; }
+    setPin($('fPin').value);
+    await loadPlanning();
+    if (data === 'desactive') $('rPlan').insertAdjacentHTML('afterbegin',
+      '<p class="msg">Affectation <b>désactivée</b> : elle a déjà des résultats, l\'historique est conservé.</p>');
+  };
 }
 
 // ---------- Interface ----------
