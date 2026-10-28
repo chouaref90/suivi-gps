@@ -50,6 +50,14 @@
   .msg { font-size: 13px; color: var(--muted); margin: 12px 0; }
   .err { background: #fee2e2; color: #991b1b; padding: 10px; border-radius: 8px; font-size: 13px; margin: 0 16px 12px; }
   #hInfo { font-size: 13px; margin-top: 8px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .gauge { text-align: center; margin: 16px 0 8px; }
+  .gauge b { font-size: 44px; line-height: 1; }
+  .bar { height: 10px; border-radius: 5px; background: var(--bg2); overflow: hidden; margin: 10px 0 14px; }
+  .bar div { height: 100%; }
+  .legend { display: flex; gap: 14px; font-size: 12px; color: var(--muted); }
+  .legend i { display: inline-block; width: 18px; height: 4px; border-radius: 2px; vertical-align: middle; margin-right: 4px; }
+  input[type=range] { accent-color: var(--accent); padding: 0; margin-top: 8px; }
   .vicon svg { width: 30px; height: 30px; filter: drop-shadow(0 1px 2px rgba(0,0,0,.4)); }
   .leaflet-popup-content { font-size: 13px; line-height: 1.5; }
   @media (max-width: 700px) {
@@ -68,6 +76,7 @@
   <div class="tabs">
     <button data-tab="live" class="on">Flotte</button>
     <button data-tab="hist">Historique</button>
+    <button data-tab="circ">Circuits</button>
   </div>
   <section id="tab-live">
     <input id="search" placeholder="Rechercher un véhicule…">
@@ -81,6 +90,18 @@
     <div id="hStats"></div>
     <input type="range" id="hSlider" min="0" value="0" hidden>
     <div id="hInfo"></div>
+  </section>
+  <section id="tab-circ" hidden>
+    <label>Circuit<select id="cCirc"></select></label>
+    <label>Véhicule<select id="cDev"></select></label>
+    <label>Date<input type="date" id="cDate"></label>
+    <div class="row2">
+      <label>De<input type="time" id="cFrom" value="00:00"></label>
+      <label>À<input type="time" id="cTo" value="23:59"></label>
+    </div>
+    <label>Tolérance (m)<input type="number" id="cTol" value="20" min="5" max="100" step="5"></label>
+    <button class="btn" id="cGo">Calculer le taux de réalisation</button>
+    <div id="cRes"></div>
   </section>
 </aside>
 <main id="map"></main>
@@ -108,6 +129,7 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 const fleetLayer = L.layerGroup().addTo(map);
 const histLayer = L.layerGroup();
+const circLayer = L.layerGroup();
 
 // ---------- Utilitaires ----------
 const devices = new Map(); // imei -> { imei, name, plate, last, marker }
@@ -194,9 +216,12 @@ function renderList() {
     .map((k) => `<span><span class="dot" style="background:${COLORS[k]};margin:0"></span>${LABELS[k]} : ${counts[k]}</span>`).join('');
 }
 function fillHistSelect() {
-  const cur = $('hDev').value;
-  $('hDev').innerHTML = [...devices.values()].map((d) => `<option value="${d.imei}">${label(d)}</option>`).join('');
-  if (cur) $('hDev').value = cur;
+  const opts = [...devices.values()].map((d) => `<option value="${d.imei}">${label(d)}</option>`).join('');
+  for (const id of ['hDev', 'cDev']) {
+    const cur = $(id).value;
+    $(id).innerHTML = opts;
+    if (cur) $(id).value = cur;
+  }
 }
 
 let sb;
@@ -291,19 +316,69 @@ function moveCursor(i) {
   $('hInfo').textContent = `${fmtTime(p.ts)} · ${p.speed} km/h · contact ${p.ignition ? 'ON' : 'OFF'}`;
 }
 
+// ---------- Circuits : taux de réalisation ----------
+const circuits = new Map();
+async function loadCircuits() {
+  const { data, error } = await sb.from('circuits_list').select('*').order('code');
+  if (error) return; // table pas encore créée
+  data.forEach((c) => circuits.set(String(c.id), c));
+  $('cCirc').innerHTML = data.map((c) => `<option value="${c.id}">${c.code || ''}${c.name ? ' — ' + c.name : ''} (${c.km} km)</option>`).join('');
+}
+function showCircuit() {
+  const c = circuits.get($('cCirc').value);
+  circLayer.clearLayers();
+  $('cRes').innerHTML = '';
+  if (!c) return;
+  const l = L.geoJSON(c.geojson, { style: { color: '#6b7280', weight: 6, opacity: 0.7, dashArray: '8 6' } }).addTo(circLayer);
+  map.fitBounds(l.getBounds(), { padding: [40, 40] });
+}
+async function calcCircuit() {
+  const c = circuits.get($('cCirc').value), imei = $('cDev').value, day = $('cDate').value;
+  if (!c || !imei || !day) return;
+  const from = new Date(`${day}T${$('cFrom').value || '00:00'}:00`);
+  const to = new Date(`${day}T${$('cTo').value || '23:59'}:59`);
+  $('cRes').innerHTML = '<p class="msg">Calcul en cours…</p>';
+  const { data: r, error } = await sb.rpc('circuit_realisation', {
+    p_circuit: +c.id, p_imei: imei, p_from: from.toISOString(), p_to: to.toISOString(), p_tol: +$('cTol').value || 20,
+  });
+  if (error) { $('cRes').innerHTML = ''; return showErr('Erreur calcul : ' + error.message); }
+  circLayer.clearLayers();
+  const seg = L.geoJSON(r.segments, {
+    style: (f) => ({ color: f.properties.ok ? '#16a34a' : '#BD171E', weight: 7, opacity: 0.9, lineCap: 'butt' }),
+  }).addTo(circLayer);
+  map.fitBounds(seg.getBounds(), { padding: [40, 40] });
+  const t = Number(r.taux ?? 0);
+  const col = t >= 90 ? '#16a34a' : t >= 70 ? '#f59e0b' : '#BD171E';
+  const manque = (r.longueur_m - r.realise_m) / 1000;
+  $('cRes').innerHTML = `
+    <div class="gauge"><b style="color:${col}">${t} %</b><div class="msg" style="margin:4px 0 0">Taux de réalisation</div></div>
+    <div class="bar"><div style="width:${t}%;background:${col}"></div></div>
+    <div class="stats">
+      <div class="stat"><b>${(r.realise_m / 1000).toFixed(2)} km</b><small>Réalisé</small></div>
+      <div class="stat"><b>${manque.toFixed(2)} km</b><small>Non réalisé</small></div>
+      <div class="stat"><b>${r.t_debut ? fmtHour(r.t_debut) : '—'}</b><small>Entrée sur circuit</small></div>
+      <div class="stat"><b>${r.t_fin ? fmtHour(r.t_fin) : '—'}</b><small>Dernier passage</small></div>
+    </div>
+    <div class="legend"><span><i style="background:#16a34a"></i>Réalisé</span><span><i style="background:#BD171E"></i>Non réalisé</span></div>`;
+}
+
 // ---------- Interface ----------
 document.querySelectorAll('.tabs button').forEach((b) => b.onclick = () => {
   document.querySelectorAll('.tabs button').forEach((x) => x.classList.toggle('on', x === b));
-  const hist = b.dataset.tab === 'hist';
-  $('tab-live').hidden = hist;
-  $('tab-hist').hidden = !hist;
-  if (hist) { map.removeLayer(fleetLayer); histLayer.addTo(map); }
-  else { map.removeLayer(histLayer); fleetLayer.addTo(map); }
+  const tab = b.dataset.tab;
+  const layers = { live: fleetLayer, hist: histLayer, circ: circLayer };
+  for (const k in layers) {
+    $('tab-' + k).hidden = k !== tab;
+    if (k === tab) layers[k].addTo(map); else map.removeLayer(layers[k]);
+  }
+  if (tab === 'circ' && !circLayer.getLayers().length) showCircuit();
 });
 $('search').oninput = renderList;
 $('hGo').onclick = loadHistory;
 $('hSlider').oninput = (e) => moveCursor(+e.target.value);
-$('hDate').value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+$('hDate').value = $('cDate').value = new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+$('cCirc').onchange = showCircuit;
+$('cGo').onclick = calcCircuit;
 
 // ---------- Démarrage ----------
 if (SUPABASE_ANON_KEY.startsWith('COLLE_ICI')) {
@@ -312,6 +387,7 @@ if (SUPABASE_ANON_KEY.startsWith('COLLE_ICI')) {
 } else {
   sb = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
   loadFleet(true);
+  loadCircuits();
   sb.channel('positions-live')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'positions' }, (payload) => {
       updatePos(payload.new);
