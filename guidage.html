@@ -347,8 +347,15 @@ const isoToday = () => { const d = new Date(); return new Date(d - d.getTimezone
 const hhmm = (ts) => new Date(ts).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 async function loadNavBacs() {
   const c = S.circ; if (!c || !map) return;
-  const { data, error } = await sb.rpc('bacs_etat', { p_jour: isoToday() });
-  if (error || !data || S.circ !== c) return;            // module Bacs non installé : on n'affiche rien
+  let data = [];
+  try {                                                   // par paquets de 1000 (limite Supabase)
+    for (let i = 0; ; i += 1000) {
+      const { data: d, error } = await sb.rpc('bacs_etat', { p_jour: isoToday() }).order('id').range(i, i + 999);
+      if (error) return;                                  // module Bacs non installé : on n'affiche rien
+      data = data.concat(d); if (d.length < 1000) break;
+    }
+  } catch { return; }
+  if (S.circ !== c) return;
   // bacs du circuit + bacs posés à moins de 25 m du tracé
   const list = data.filter((b) => b.actif && (b.circuit_code === c.code || (() => { const n = nearestAll(S.rt, [b.lat, b.lng]); return n && n.dd <= 25; })()));
   if (!bacsLayer) {
