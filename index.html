@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SOS RABAT TEST – Suivi GPS</title>
+<title>SOS Al Bayda – Suivi GPS</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
   :root {
@@ -478,6 +478,7 @@
     <label>Tolérance (m)<input type="number" id="cTol" value="20" min="5" max="100" step="5"></label>
     <label class="chk"><input type="checkbox" id="cSens"> Respecter le sens de circulation</label>
     <button class="btn" id="cGo">Calculer le taux de réalisation</button>
+    <button class="btn2" id="cGuide" style="width:100%;margin-top:8px">Ouvrir le guidage chauffeur (téléphone)</button>
     <div id="cRes"></div>
   </div></section>
 
@@ -2981,6 +2982,7 @@ const lvPick = new DatePick($('lvDate'), { placeholder: 'Choisir une date pour l
 const detPick = new DatePick($('dDateField'), { allowEmpty: false, value: DatePick.day(isoDay(new Date())) });
 $('cCirc').onchange = showCircuit;
 $('cGo').onclick = calcCircuit;
+$('cGuide').onclick = () => window.open(`guidage.html?c=${encodeURIComponent($('cCirc').value)}&imei=${encodeURIComponent($('cDev').value || '')}`, '_blank');
 {
   const y = new Date(); y.setDate(y.getDate() - 1);
   const w = new Date(); w.setDate(w.getDate() - 7);
