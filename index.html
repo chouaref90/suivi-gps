@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SOS RABAT – Suivi GPS</title>
+<title>SOS Al Bayda – Suivi GPS</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
   :root {
@@ -348,7 +348,11 @@
   .arrow svg { width: 16px; height: 16px; }
   .tarrow svg { width: 14px; height: 14px; }
   .leaflet-popup-content { font-size: 13px; line-height: 1.5; }
-  .leaflet-container img.leaflet-tile { mix-blend-mode: plus-lighter; }  /* supprime les fines lignes blanches entre les tuiles */
+  .leaflet-container img.leaflet-tile { mix-blend-mode: plus-lighter; }
+  .leaflet-control-layers label { display: block; margin: 0; padding: 3px 4px; font-size: 13px; color: #111827; cursor: pointer; }
+  .leaflet-control-layers label > span { display: flex; align-items: center; gap: 6px; }
+  .leaflet-control-layers input { width: auto; margin: 0; padding: 0; }
+  .leaflet-control-layers-expanded { padding: 8px 12px 8px 8px; }  /* supprime les fines lignes blanches entre les tuiles */
 
   /* ---- Connexion ---- */
   #login { position: fixed; inset: 0; z-index: 2000; overflow: auto; }
@@ -380,9 +384,9 @@
   }
   @media (max-width: 760px) {
     body { flex-direction: column; overflow: auto; }
-    #rail { width: 100%; height: 52px; flex-direction: row; justify-content: flex-start; padding: 0 4px; border-right: 0; border-bottom: 1px solid var(--border); }
+    #rail { width: 100%; height: 52px; flex-direction: row; justify-content: flex-start; padding: 0 4px; overflow-x: auto; flex-shrink: 0; border-right: 0; border-bottom: 1px solid var(--border); }
     .rail-logo { width: 36px; height: 36px; margin: 0 6px; }
-    .rb { width: 48px; height: 52px; }
+    .rb { width: 48px; height: 52px; flex-shrink: 0; }
     .rb .tip { display: none !important; }
     .rail-sp { flex: 1; }
     #side { width: 100%; height: 48vh; border-right: 0; border-bottom: 1px solid var(--border); }
@@ -403,7 +407,7 @@
   <button class="rb" data-tab="fdr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2.8h6V4M8.5 10h7M8.5 14h7M8.5 18h4"/></svg><span class="tip">Feuille de route</span></button>
   <button class="rb" data-tab="rep"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M7 14h3M7 17h3M13 14h4"/></svg><span class="tip">Résultats & planning</span></button>
   <div class="rail-sp"></div>
-  <button class="rb" data-tab="bacs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1.2 13h9.6L18 7"/><path d="M10 11v6M14 11v6"/></svg><span class="tip">Bacs</span></button>
+  <button class="rb" data-tab="bacs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round" stroke-linecap="round"><path d="M5 6.2c0-1 .6-1.6 1.6-1.6h9.8c1 0 1.6.6 1.6 1.6v1H5z"/><path d="M18 5.4h2.4"/><path d="M5.8 7.2l1.2 11.6h6.8"/><path d="M17.2 7.2l-1.1 8.5"/><circle cx="16" cy="18.6" r="2.2"/><path d="M8.2 18.8v1.9"/><path d="M6.3 10.4h10.4"/></svg><span class="tip">Bacs</span></button>
   <button class="rb" data-tab="alr" id="rbAlert"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="bdg" id="alBadge" hidden>0</span><span class="tip">Alertes</span></button>
   <button class="rb" data-tab="adm" id="rbAdmin" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="tip">Administration</span></button>
   <span id="live" class="live-dot" title="Connexion…"></span>
@@ -672,6 +676,7 @@
 // ======= CONFIGURATION =======
 const SUPABASE_URL = 'https://zhhpkuxkqzxttdaqwpyx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoaHBrdXhrcXp4dHRkYXF3cHl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxMTUzNjEsImV4cCI6MjEwODY5MTM2MX0.oKbDSNa1qV-8NXm_g3IhNIvBluifDep1w98s9-Asrzk';   // clé anon / publishable (PAS la service_role)
+const GOOGLE_MAPS_KEY = '';   // facultatif : clé Google Maps (Map Tiles API) pour les fonds Google — vide = pas de Google
 const OFFLINE_MIN = 15;                              // minutes sans données => hors ligne
 const ALERT_HOURS = 24;                              // au-delà : point d'alerte sur la carte du véhicule
 const SUPPORT_CONTACT = '';   // ex. 'mailto:support@tondomaine.ma' ou 'tel:+212600000000' (vide = lien masqué)
@@ -687,9 +692,50 @@ const TRUCK_SVG = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M2 6.5h
 
 function showErr(t) { $('err').textContent = t; $('err').hidden = false; }
 
+// ---------- Fonds de carte (OpenStreetMap, satellite, Google si clé) ----------
+function fondsDeCarte() {
+  const osm = () => L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' });
+  const esri = (s) => `https://server.arcgisonline.com/ArcGIS/rest/services/${s}/MapServer/tile/{z}/{y}/{x}`;
+  const google = (opts) => {               // tuiles officielles Google (Map Tiles API) : session créée à la 1re utilisation
+    const g = L.layerGroup();
+    g.on('add', async () => {
+      if (g.getLayers().length) return;
+      try {
+        const r = await fetch('https://tile.googleapis.com/v1/createSession?key=' + GOOGLE_MAPS_KEY, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ language: 'fr-FR', region: 'MA', ...opts }) });
+        const j = await r.json();
+        if (!j.session) throw new Error((j.error && j.error.message) || 'session refusée');
+        g.addLayer(L.tileLayer(`https://tile.googleapis.com/v1/2dtiles/{z}/{x}/{y}?session=${j.session}&key=${GOOGLE_MAPS_KEY}`,
+          { maxZoom: 21, maxNativeZoom: 20, attribution: 'Données cartographiques © Google' }));
+      } catch (e) { if (typeof showToast === 'function') showToast('Google Maps : ' + e.message, 6000); }
+    });
+    return g;
+  };
+  const f = {
+    'Plan (OpenStreetMap)': osm(),
+    'Satellite': L.layerGroup([
+      L.tileLayer(esri('World_Imagery'), { maxZoom: 20, maxNativeZoom: 19, attribution: 'Imagerie © Esri, Maxar' }),
+      L.tileLayer(esri('Reference/World_Boundaries_and_Places'), { maxZoom: 20, maxNativeZoom: 19 }),
+      L.tileLayer(esri('Reference/World_Transportation'), { maxZoom: 20, maxNativeZoom: 19, opacity: 0.8 }),
+    ]),
+  };
+  if (typeof GOOGLE_MAPS_KEY === 'string' && GOOGLE_MAPS_KEY.trim()) {
+    f['Google Plan'] = google({ mapType: 'roadmap' });
+    f['Google Satellite'] = google({ mapType: 'satellite', layerTypes: ['layerRoadmap'] });
+  }
+  return f;
+}
+function fondChoisi(fonds) {
+  let k = null; try { k = localStorage.getItem('sos_fond'); } catch {}
+  return fonds[k] ? k : 'Plan (OpenStreetMap)';
+}
+
 // ---------- Carte ----------
-const map = L.map('map').setView([34.0, -6.83], 12);
-L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+const map = L.map('map', { maxZoom: 21 }).setView([34.0, -6.83], 12);
+const FONDS = fondsDeCarte();
+FONDS[fondChoisi(FONDS)].addTo(map);
+L.control.layers(FONDS, null, { position: 'topright' }).addTo(map);
+map.on('baselayerchange', (e) => { try { localStorage.setItem('sos_fond', e.name); } catch {} });
 const fleetLayer = L.layerGroup().addTo(map);
 const overlayCirc = L.layerGroup().addTo(map);   // circuits cochés dans « Temps réel > Circuit »
 const detLayer = L.layerGroup();                 // trajets de la fiche véhicule
