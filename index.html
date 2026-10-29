@@ -3073,7 +3073,11 @@ const BAC_TYPES = ['660L plastique', '660L galvanisé', '1100L plastique', '1100
 
 async function loadBacs(fit) {
   const jour = $('bJour').value;
-  const [{ data, error }, prm] = await Promise.all([sb.rpc('bacs_etat', { p_jour: jour }), sb.from('bacs_params').select('*').eq('id', 1)]);
+  // lecture par paquets de 1000 (Supabase limite chaque réponse à 1000 lignes)
+  let data = null, error = null;
+  const [r1, prm] = await Promise.all([fetchAll(() => sb.rpc('bacs_etat', { p_jour: jour }).order('id')).then((d) => ({ d }), (e) => ({ e })),
+    sb.from('bacs_params').select('*').eq('id', 1)]);
+  data = r1.d; error = r1.e;
   if (error) { showErr('Bacs : ' + error.message + (/bacs/.test(error.message) ? ' (as-tu exécuté bacs_v13.sql ?)' : '')); return; }
   bacsRows = data; bacsParams = prm.data && prm.data[0];
   // filtres
