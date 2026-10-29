@@ -123,7 +123,7 @@
   <div class="bottom">
     <div class="bt-row"><b id="nCirc"></b><span class="msg" id="nMode"></span></div>
     <div class="pbar"><div id="nBar" style="width:0%"></div></div>
-    <div class="stats"><span><b id="nPct">0 %</b> réalisé</span><span><b id="nRest">–</b> restant</span><span><b id="nSpd">0</b> km/h</span></div>
+    <div class="stats"><span><b id="nPct">0 %</b> réalisé</span><span><b id="nRest">–</b> restant</span><span><b id="nSpd">0</b> km/h</span><span id="nBacsW" hidden><b id="nBacs">0/0</b> bacs</span></div>
     <div class="acts">
       <button id="aCenter" class="on">Suivre</button>
       <button id="aVoice" class="on">Voix</button>
@@ -139,6 +139,7 @@
 // ======= CONFIGURATION (mêmes valeurs que index.html) =======
 const SUPABASE_URL = 'https://zhhpkuxkqzxttdaqwpyx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoaHBrdXhrcXp4dHRkYXF3cHl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxMTUzNjEsImV4cCI6MjEwODY5MTM2MX0.oKbDSNa1qV-8NXm_g3IhNIvBluifDep1w98s9-Asrzk';
+const GOOGLE_MAPS_KEY = '';   // facultatif : clé Google Maps (Map Tiles API) pour les fonds Google — vide = pas de Google
 const OSRM_URL = 'https://router.project-osrm.org';   // calcul d'itinéraire (gratuit, OpenStreetMap)
 const ON_ROUTE_M = 35;       // distance max au tracé pour être « sur le circuit »
 // =============================================================
@@ -282,12 +283,96 @@ async function osrmRoute(from, to) {
 // ---------- État du guidage ----------
 const S = { circ: null, rt: null, man: [], prog: 0, segIdx: 0, mode: 'wait', offCount: 0, app: null, appProg: 0, appIdx: 0,
   follow: true, last: null, watch: null, wake: null, key: '' };
+// ---------- Fonds de carte (OpenStreetMap, satellite, Google si clé) ----------
+function fondsDeCarte() {
+  const osm = () => L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' });
+  const esri = (s) => `https://server.arcgisonline.com/ArcGIS/rest/services/${s}/MapServer/tile/{z}/{y}/{x}`;
+  const google = (opts) => {               // tuiles officielles Google (Map Tiles API) : session créée à la 1re utilisation
+    const g = L.layerGroup();
+    g.on('add', async () => {
+      if (g.getLayers().length) return;
+      try {
+        const r = await fetch('https://tile.googleapis.com/v1/createSession?key=' + GOOGLE_MAPS_KEY, {
+          method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ language: 'fr-FR', region: 'MA', ...opts }) });
+        const j = await r.json();
+        if (!j.session) throw new Error((j.error && j.error.message) || 'session refusée');
+        g.addLayer(L.tileLayer(`https://tile.googleapis.com/v1/2dtiles/{z}/{x}/{y}?session=${j.session}&key=${GOOGLE_MAPS_KEY}`,
+          { maxZoom: 21, maxNativeZoom: 20, attribution: 'Données cartographiques © Google' }));
+      } catch (e) { if (typeof showToast === 'function') showToast('Google Maps : ' + e.message, 6000); }
+    });
+    return g;
+  };
+  const f = {
+    'Plan (OpenStreetMap)': osm(),
+    'Satellite': L.layerGroup([
+      L.tileLayer(esri('World_Imagery'), { maxZoom: 20, maxNativeZoom: 19, attribution: 'Imagerie © Esri, Maxar' }),
+      L.tileLayer(esri('Reference/World_Boundaries_and_Places'), { maxZoom: 20, maxNativeZoom: 19 }),
+      L.tileLayer(esri('Reference/World_Transportation'), { maxZoom: 20, maxNativeZoom: 19, opacity: 0.8 }),
+    ]),
+  };
+  if (typeof GOOGLE_MAPS_KEY === 'string' && GOOGLE_MAPS_KEY.trim()) {
+    f['Google Plan'] = google({ mapType: 'roadmap' });
+    f['Google Satellite'] = google({ mapType: 'satellite', layerTypes: ['layerRoadmap'] });
+  }
+  return f;
+}
+function fondChoisi(fonds) {
+  let k = null; try { k = localStorage.getItem('sos_fond'); } catch {}
+  return fonds[k] ? k : 'Plan (OpenStreetMap)';
+}
+
 let map, lineDone, lineTodo, lineApp, meMk, accCircle;
+
+// ---------- Bacs du circuit ----------
+const BIN_BODY = new Path2D('M5.8 7.2L7 18.8h8.4l1.8-11.6z'), BIN_LID = new Path2D('M4.6 4.3h13.8v2.9H4.6z'),
+  BIN_HANDLE = new Path2D('M18.2 5h2.6v1.5h-2.6z'), BIN_RIB = new Path2D('M6.3 10.4h10.4');
+const binSize = (z) => (z >= 17 ? 28 : z >= 15 ? 22 : z >= 13 ? 16 : 12);
+const BinMarker = L.CircleMarker.extend({
+  _project() { this._radius = this._radiusY = binSize(this._map.getZoom()) / 2 + 2; L.CircleMarker.prototype._project.call(this); },
+  _updatePath() {
+    const r = this._renderer; if (!r._drawing || this._empty()) return;
+    const ctx = r._ctx, S2 = binSize(this._map.getZoom()), k = S2 / 24, p = this._point;
+    ctx.save(); ctx.translate(p.x - S2 / 2, p.y - S2 / 2); ctx.scale(k, k);
+    ctx.lineJoin = 'round'; ctx.lineWidth = Math.min(2.6, 2.2 / k); ctx.strokeStyle = '#fff';
+    [BIN_BODY, BIN_LID, BIN_HANDLE].forEach((pth) => ctx.stroke(pth));
+    ctx.fillStyle = this.options.fillColor; [BIN_BODY, BIN_LID, BIN_HANDLE].forEach((pth) => ctx.fill(pth));
+    ctx.beginPath(); ctx.arc(16, 18.6, 2.4, 0, 2 * Math.PI); ctx.fillStyle = '#1f2937'; ctx.fill(); ctx.lineWidth = 1.2; ctx.stroke();
+    if (S2 >= 16) { ctx.lineWidth = 1.1; ctx.strokeStyle = 'rgba(255,255,255,.8)'; ctx.stroke(BIN_RIB); }
+    ctx.restore();
+  },
+});
+const BAC_COL = { ok: '#16a34a', ko: '#BD171E' };
+let bacsLayer = null, bacsTimer = null;
+const isoToday = () => { const d = new Date(); return new Date(d - d.getTimezoneOffset() * 60000).toISOString().slice(0, 10); };
+const hhmm = (ts) => new Date(ts).toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+async function loadNavBacs() {
+  const c = S.circ; if (!c || !map) return;
+  const { data, error } = await sb.rpc('bacs_etat', { p_jour: isoToday() });
+  if (error || !data || S.circ !== c) return;            // module Bacs non installé : on n'affiche rien
+  // bacs du circuit + bacs posés à moins de 25 m du tracé
+  const list = data.filter((b) => b.actif && (b.circuit_code === c.code || (() => { const n = nearestAll(S.rt, [b.lat, b.lng]); return n && n.dd <= 25; })()));
+  if (!bacsLayer) {
+    map.createPane('bacs').style.zIndex = 450;
+    bacsLayer = L.layerGroup().addTo(map);
+  }
+  bacsLayer.clearLayers();
+  const rend = L.canvas({ pane: 'bacs', padding: 0.3 });
+  list.forEach((b) => {
+    const ok = Number(b.nb_collectes) > 0;
+    new BinMarker([b.lat, b.lng], { renderer: rend, pane: 'bacs', radius: 10, fillColor: ok ? BAC_COL.ok : BAC_COL.ko })
+      .bindPopup(`<b>${esc(b.code || 'Bac')}</b> ${esc(b.type || '')}<br>${esc(b.adresse || '')}<br>` +
+        (ok ? `<b style="color:${BAC_COL.ok}">Collecté à ${hhmm(b.premiere)}</b>` : `<b style="color:${BAC_COL.ko}">À collecter</b>`), { offset: [0, -8] })
+      .addTo(bacsLayer);
+  });
+  const nOk = list.filter((b) => Number(b.nb_collectes) > 0).length;
+  $('nBacsW').hidden = !list.length; $('nBacs').textContent = `${nOk}/${list.length}`;
+}
 
 function initMap() {
   if (map) return;
-  map = L.map('map', { zoomControl: false, attributionControl: true });
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(map);
+  map = L.map('map', { zoomControl: false, attributionControl: true, maxZoom: 21 });
+  const fonds = fondsDeCarte();
+  fonds[fondChoisi(fonds)].addTo(map);   // même fond que celui choisi sur la plateforme
   map.on('dragstart', () => { S.follow = false; $('aCenter').classList.remove('on'); });
 }
 function meIcon(h) {
@@ -456,6 +541,9 @@ async function startNav(c, reverse, resume) {
   lineApp = L.polyline([], { color: '#6d28d9', weight: 6, dashArray: '10 8' }).addTo(map);
   drawLines();
   map.fitBounds(L.latLngBounds(S.rt.pts), { padding: [140, 40] });
+  if (bacsLayer) bacsLayer.clearLayers();
+  $('nBacsW').hidden = true;
+  loadNavBacs(); clearInterval(bacsTimer); bacsTimer = setInterval(loadNavBacs, 120000);   // état des bacs mis à jour toutes les 2 min
   $('nCirc').textContent = `${c.code}${c.name && c.name !== c.code ? ' — ' + c.name : ''}`;
   $('nRest').textContent = fmtDist(S.rt.len - S.prog);
   $('nPct').textContent = `${Math.floor(100 * S.prog / S.rt.len)} %`; $('nBar').style.width = `${100 * S.prog / S.rt.len}%`;
@@ -469,6 +557,7 @@ async function startNav(c, reverse, resume) {
   try { S.wake = await navigator.wakeLock.request('screen'); } catch {}
 }
 function stopNav() {
+  clearInterval(bacsTimer);
   if (S.watch !== null) navigator.geolocation.clearWatch(S.watch);
   S.watch = null;
   try { S.wake && S.wake.release(); } catch {}
