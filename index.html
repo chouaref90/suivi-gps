@@ -275,6 +275,26 @@
   #acMap { height: 340px; border: 1px solid var(--border); }
   @media (max-width: 900px) { .acgrid { grid-template-columns: 1fr; } }
 
+  /* tableau de bord */
+  #dashPanel { background: #f4f6f9; }
+  #dashPanel .dhead { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; }
+  #dashPanel .dhead label { margin: 0; display: flex; flex-direction: column; gap: 3px; font-size: 12px; color: var(--muted); }
+  #dashPanel .dhead input, #dashPanel .dhead select { width: auto; }
+  #dbPresets { display: flex; gap: 4px; flex-wrap: wrap; }
+  #dbPresets button { border: 1px solid var(--border); background: #fff; border-radius: 14px; padding: 5px 11px; cursor: pointer; font-size: 13px; color: var(--text); }
+  #dbPresets button.on, #dbPresets button:hover { border-color: var(--accent); color: var(--accent); }
+  #dashPanel .mtabs { background: #fff; border: 1px solid var(--border); border-radius: 8px 8px 0 0; margin-bottom: 14px; }
+  #dashPanel .kc { background: #fff; }
+  .dgrid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 16px; }
+  .dcard { background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; box-shadow: 0 1px 3px rgba(0,0,0,.05); min-width: 0; }
+  .dcard.wide { grid-column: 1 / -1; }
+  .dcard h4 { margin: 0 0 8px; font-size: 14px; color: var(--accent-dark); }
+  .dch { position: relative; height: 270px; }
+  .dh3 { color: var(--accent-dark); font-size: 16px; margin: 6px 0 10px; }
+  #dbBody .gw, #dbBody .tr-foot, #pnList .gw { background: #fff; }
+  @media (max-width: 1000px) { .dgrid2 { grid-template-columns: 1fr; } }
+  @media print { #dashPanel { background: #fff; } #dashPanel .dhead, #dashPanel .tr-foot, #pnNew, #pnList button { display: none !important; } .dcard { break-inside: avoid; } }
+
   /* bacs */
   .bsum { display: flex; align-items: center; gap: 8px; padding: 5px 6px; font-size: 13px; cursor: pointer; border-radius: 4px; }
   .bsum span:first-child { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -402,6 +422,7 @@
   <button class="rb on" data-tab="live"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/><path d="M3.5 9.5 2 8M20.5 9.5 22 8"/></svg><span class="tip">Temps réel</span></button>
   <button class="rb" data-tab="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/><path d="M12 8v4l3 2"/></svg><span class="tip">Rejouer un trajet</span></button>
   <button class="rb" data-tab="circ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="5" cy="18" r="2.2"/><circle cx="19" cy="6" r="2.2"/><path d="M7 18h7a3.5 3.5 0 0 0 0-7H10a3.5 3.5 0 0 1 0-7h7"/></svg><span class="tip">Circuits – taux de réalisation</span></button>
+  <button class="rb" data-tab="dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 20h18"/><path d="M6 16v-5M10.5 16V7M15 16v-7M19.5 16V4"/></svg><span class="tip">Tableau de bord</span></button>
   <button class="rb" data-tab="data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><path d="M15.5 15.5 21 21"/><text x="10" y="12.5" font-size="6.5" text-anchor="middle" fill="currentColor" stroke="none" font-family="Arial" font-weight="700">01</text></svg><span class="tip">Module Data</span></button>
   <button class="rb" data-tab="kpi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span class="tip">Rapport circuits</span></button>
   <button class="rb" data-tab="fdr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2.8h6V4M8.5 10h7M8.5 14h7M8.5 18h4"/></svg><span class="tip">Feuille de route</span></button>
@@ -549,6 +570,25 @@
     <div id="mdExec"></div><div id="mdAct" hidden></div>
   </div>
 
+  <div class="fp" id="dashPanel" hidden>
+    <h2>Tableau de bord</h2>
+    <div class="mtabs"><button class="on" data-d="act">Suivi activité</button><button data-d="dispo">Disponibilité</button><button data-d="circ">Exécution des circuits</button><button data-d="flt">Statut GPS / pannes</button></div>
+    <div class="dhead">
+      <span id="dbPeriod" style="display:contents">
+        <label>Du<input type="date" id="dbFrom"></label>
+        <label>Au<input type="date" id="dbTo"></label>
+        <div id="dbPresets"><button data-p="today">Aujourd'hui</button><button data-p="yest">Hier</button><button data-p="7">7 jours</button><button data-p="30">30 jours</button><button data-p="month" class="on">Ce mois</button><button data-p="prev">Mois dernier</button></div>
+      </span>
+      <label>Lot<select id="dbLot"></select></label>
+      <label>Catégorie<select id="dbCat"></select></label>
+      <button class="btn2" id="dbNow" hidden>Actualiser</button>
+      <button class="btn2" id="dbRecalc" title="Recalculer les statistiques GPS de la période">Recalculer</button>
+      <button class="btn2" id="dbPrint">Imprimer / PDF</button>
+      <span class="msg" id="dbMsg"></span>
+    </div>
+    <div id="dbBody"></div>
+  </div>
+
   <div class="fp" id="kpiPanel" hidden>
     <h2>Rapport circuits</h2>
     <div class="rep-ctrl"><div class="dfield" id="kpDate"></div><button class="btn" id="kpGo">Afficher</button><button class="btn2" id="kpCalc">Calculer maintenant</button><button class="btn2" id="kpPrint">Imprimer / PDF</button></div>
@@ -672,6 +712,7 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/shpjs@4.0.4/dist/shp.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.js"></script>
 <script>
 // ======= CONFIGURATION =======
 const SUPABASE_URL = 'https://zhhpkuxkqzxttdaqwpyx.supabase.co';
@@ -3229,6 +3270,360 @@ function bacParamsForm() {
   };
 }
 
+// ---------- Tableau de bord ----------
+const DISPO_OBJ = 96;                       // objectif de disponibilité (%)
+const PANNE_TYPES = { mecanique: 'Mécanique', gps: 'GPS / boîtier', accident: 'Accident', autre: 'Autre' };
+const DC = { blue: '#2f6fbf', dark: '#1d4f8f', green: '#16a34a', red: '#BD171E', orange: '#f59e0b', grey: '#9ca3af', sky: '#93c5fd', purple: '#7c3aed' };
+let dashTab = 'act', dashCharts = {}, dashTimer = null, dashBusy = 0;
+const nf = (v, d = 0) => Number(v || 0).toLocaleString('fr-FR', { minimumFractionDigits: d, maximumFractionDigits: d });
+const dayList = (a, b) => { const out = [], d = new Date(a + 'T12:00:00'), e = new Date(b + 'T12:00:00'); while (d <= e && out.length < 400) { out.push(isoDay(d)); d.setDate(d.getDate() + 1); } return out; };
+const dLabel = (k) => (k.length === 7 ? `${MOIS[+k.slice(5) - 1]} ${k.slice(0, 4)}` : `${k.slice(8)}/${k.slice(5, 7)}`);
+const kcard = (t, v, sub, col) => `<div class="kc" style="border-left:4px solid ${col || DC.blue}"><small>${esc(t)}</small><b style="color:${col || 'var(--text)'}">${v}</b><span>${sub || ''}</span></div>`;
+const dcard = (id, title, wide) => `<div class="dcard${wide ? ' wide' : ''}"><h4>${esc(title)}</h4><div class="dch"><canvas id="${id}"></canvas></div></div>`;
+
+async function fetchAll(mk) {                // contourne la limite de 1000 lignes de Supabase
+  let out = [];
+  for (let i = 0; ; i += 1000) {
+    const { data, error } = await mk().range(i, i + 999);
+    if (error) throw error;
+    out = out.concat(data);
+    if (data.length < 1000) return out;
+  }
+}
+function dChart(id, cfg) {
+  if (dashCharts[id]) dashCharts[id].destroy();
+  const el = $(id); if (!el || typeof Chart === 'undefined') return;
+  cfg.options = Object.assign({ responsive: true, maintainAspectRatio: false, animation: { duration: 300 },
+    plugins: { legend: { display: false } } }, cfg.options || {});
+  dashCharts[id] = new Chart(el, cfg);
+}
+function dashFleet() {
+  const lot = $('dbLot').value, cat = $('dbCat').value;
+  return [...devices.values()].filter((d) => (!lot || lotOf(d) === lot) && (!cat || catOf(d) === cat));
+}
+function fillDashFilters() {
+  const keep = (id, opts, first) => { const cur = $(id).value; $(id).innerHTML = `<option value="">${first}</option>` + opts.map((o) => `<option${o === cur ? ' selected' : ''}>${esc(o)}</option>`).join(''); };
+  const all = [...devices.values()], srt = (a, b) => a.localeCompare(b, 'fr', { numeric: true });
+  keep('dbLot', [...new Set(all.map(lotOf))].sort(srt), 'Tous les lots');
+  keep('dbCat', [...new Set(all.map(catOf))].sort(srt), 'Toutes les catégories');
+}
+function dashPreset(p) {
+  const t = new Date(), a = new Date(t), b = new Date(t);
+  if (p === 'yest') { a.setDate(t.getDate() - 1); b.setDate(t.getDate() - 1); }
+  if (p === '7') a.setDate(t.getDate() - 6);
+  if (p === '30') a.setDate(t.getDate() - 29);
+  if (p === 'month') a.setDate(1);
+  if (p === 'prev') { a.setMonth(t.getMonth() - 1, 1); b.setDate(0); }
+  $('dbFrom').value = isoDay(a); $('dbTo').value = isoDay(b);
+  document.querySelectorAll('#dbPresets button').forEach((x) => x.classList.toggle('on', x.dataset.p === p));
+  loadDash();
+}
+function dashSetTab(t) {
+  dashTab = t;
+  document.querySelectorAll('#dashPanel .mtabs button').forEach((b) => b.classList.toggle('on', b.dataset.d === t));
+  $('dbPeriod').hidden = t === 'flt';
+  $('dbRecalc').hidden = !(t === 'act' || t === 'dispo');
+  $('dbNow').hidden = t !== 'flt';
+  loadDash();
+}
+async function loadDash() {
+  const my = ++dashBusy;
+  clearInterval(dashTimer);
+  const from = $('dbFrom').value, to = $('dbTo').value;
+  if (dashTab !== 'flt' && (!from || !to || from > to)) { $('dbBody').innerHTML = '<p class="msg">Choisis une période valide.</p>'; return; }
+  $('dbMsg').textContent = 'Chargement…';
+  try {
+    if (dashTab === 'act') {
+      const st = await fetchAll(() => sb.from('stats_jour').select('*').gte('jour', from).lte('jour', to).order('jour'));
+      if (my === dashBusy) renderAct(st, from, to);
+    } else if (dashTab === 'dispo') {
+      const [st, pn] = await Promise.all([
+        fetchAll(() => sb.from('stats_jour').select('jour,imei,km,contact_s').gte('jour', from).lte('jour', to).order('jour')),
+        fetchAll(() => sb.from('pannes').select('*').lte('debut', to).or(`fin.is.null,fin.gte.${from}`).order('debut', { ascending: false }))]);
+      if (my === dashBusy) renderDispo(st, pn, from, to);
+    } else if (dashTab === 'circ') {
+      const rr = await fetchAll(() => sb.from('realisations_full').select('jour,circuit_code,circuit_name,prefecture,imei,vehicule,categorie,taux,seuil,tonnage_kg').gte('jour', from).lte('jour', to).order('jour'));
+      if (my === dashBusy) renderCirc(rr, from, to);
+    } else {
+      const today = isoDay(new Date());
+      const pn = await fetchAll(() => sb.from('pannes').select('*').lte('debut', today).or(`fin.is.null,fin.gte.${today}`));
+      if (my === dashBusy) renderFlt(pn);
+      dashTimer = setInterval(() => { if (curTab === 'dash' && dashTab === 'flt') loadDash(); }, 60000);
+    }
+    if (my === dashBusy) $('dbMsg').textContent = '';
+  } catch (e) {
+    $('dbMsg').textContent = '';
+    $('dbBody').innerHTML = `<p class="msg" style="color:#BD171E">${esc(e.message)}${/stats_jour|pannes/.test(e.message) ? ' — as-tu exécuté dashboard_v16.sql dans Supabase ?' : ''}</p>`;
+  }
+}
+
+// ---- 1) Suivi activité ----
+const actGridD = { g: null };
+function renderAct(stats, from, to) {
+  const fleet = dashFleet(), ids = new Set(fleet.map((d) => d.imei));
+  const days = dayList(from, to), nd = days.length;
+  const rows = stats.filter((s) => ids.has(s.imei));
+  const actif = (s) => Number(s.km) >= 0.5 || s.contact_s >= 600;
+  const byV = new Map(fleet.map((d) => [d.imei, { d, km: 0, contact: 0, roul: 0, jours: 0, vmax: 0 }]));
+  rows.forEach((s) => { const v = byV.get(s.imei); v.km += Number(s.km) || 0; v.contact += s.contact_s || 0; v.roul += s.roulage_s || 0; v.vmax = Math.max(v.vmax, s.vmax || 0); if (actif(s)) v.jours++; });
+  const V = [...byV.values()];
+  const km = V.reduce((a, v) => a + v.km, 0), contact = V.reduce((a, v) => a + v.contact, 0), jours = V.reduce((a, v) => a + v.jours, 0);
+  const nAct = V.filter((v) => v.jours > 0).length;
+  const moyH = fleet.length ? contact / 3600 / (fleet.length * nd) : 0;
+  $('dbBody').innerHTML = `<div class="kcards">
+      ${kcard('DISTANCE TOTALE', nf(km) + ' km', `${nd} jour(s)`)}
+      ${kcard('TEMPS DE CONTACT', nf(contact / 3600) + ' h', 'moteur allumé', DC.dark)}
+      ${kcard('VÉHICULES ACTIFS', `${nAct} / ${fleet.length}`, 'au moins 1 jour d\'activité', DC.green)}
+      ${kcard('KM / VÉHICULE / JOUR', nf(jours ? km / jours : 0, 1), 'moyenne des jours actifs', DC.purple)}
+      ${kcard('CONTACT MOYEN / JOUR', nf(moyH, 1) + ' h', `soit ${nf(moyH / 24 * 100, 1)} % de 24 h`, DC.orange)}
+    </div>
+    <div class="dgrid2">
+      ${dcard('chActDay', nd > 62 ? 'Distance par mois (km)' : 'Distance par jour (km)')}
+      ${dcard('chActCat', 'Distance par catégorie (km)')}
+      ${dcard('chActTop', 'Top 10 véhicules (km)')}
+      ${dcard('chActH', 'Moyenne heures de contact par jour (sur 24 h)')}
+    </div>
+    <h3 class="dh3">Détail par véhicule</h3><div id="dbActGrid"></div>`;
+  // par jour / mois
+  const keyOf = (j) => (nd > 62 ? j.slice(0, 7) : j);
+  const keys = [...new Set(days.map(keyOf))], kmK = Object.fromEntries(keys.map((k) => [k, 0]));
+  rows.forEach((s) => { const k = keyOf(s.jour); if (k in kmK) kmK[k] += Number(s.km) || 0; });
+  dChart('chActDay', { type: 'bar', data: { labels: keys.map(dLabel), datasets: [{ data: keys.map((k) => +kmK[k].toFixed(1)), backgroundColor: DC.blue, borderRadius: 3 }] } });
+  // par catégorie
+  const cat = {}; V.forEach((v) => { const c = catOf(v.d); cat[c] = (cat[c] || 0) + v.km; });
+  const cats = Object.keys(cat).sort((a, b) => cat[b] - cat[a]);
+  dChart('chActCat', { type: 'bar', data: { labels: cats, datasets: [{ data: cats.map((c) => +cat[c].toFixed(1)), backgroundColor: DC.dark, borderRadius: 3 }] }, options: { indexAxis: 'y' } });
+  // top 10
+  const top = V.slice().sort((a, b) => b.km - a.km).slice(0, 10);
+  dChart('chActTop', { type: 'bar', data: { labels: top.map((v) => label(v.d)), datasets: [{ data: top.map((v) => +v.km.toFixed(1)), backgroundColor: DC.green, borderRadius: 3 }] } });
+  // heures de contact moyennes par jour, par véhicule + moyenne flotte
+  const hv = V.map((v) => ({ n: label(v.d), h: v.contact / 3600 / nd })).sort((a, b) => b.h - a.h).slice(0, 40);
+  dChart('chActH', { data: { labels: hv.map((x) => x.n), datasets: [
+    { type: 'bar', label: 'Heures / jour', data: hv.map((x) => +x.h.toFixed(2)), backgroundColor: DC.sky, borderRadius: 3, order: 2 },
+    { type: 'line', label: 'Moyenne flotte', data: hv.map(() => +moyH.toFixed(2)), borderColor: DC.red, borderDash: [6, 4], pointRadius: 0, borderWidth: 2, order: 1 }] },
+    options: { plugins: { legend: { display: true, position: 'bottom' } }, scales: { y: { min: 0, max: 24, ticks: { stepSize: 4 } } } } });
+  // tableau
+  actGridD.g = new Grid($('dbActGrid'), [
+    { k: 'veh', h: 'Véhicule', f: (v) => label(v.d) },
+    { k: 'lot', h: 'Lot', f: (v) => lotOf(v.d) },
+    { k: 'cat', h: 'Catégorie', f: (v) => catOf(v.d) },
+    { k: 'j', h: 'Jours actifs', f: (v) => `${v.jours} / ${nd}`, v: (v) => v.jours },
+    { k: 'km', h: 'Km parcourus', f: (v) => nf(v.km, 1), v: (v) => v.km },
+    { k: 'kmj', h: 'Km / jour actif', f: (v) => nf(v.jours ? v.km / v.jours : 0, 1), v: (v) => (v.jours ? v.km / v.jours : 0) },
+    { k: 'c', h: 'Contact (h)', f: (v) => nf(v.contact / 3600, 1), v: (v) => v.contact },
+    { k: 'r', h: 'Roulage (h)', f: (v) => nf(v.roul / 3600, 1), v: (v) => v.roul },
+    { k: 'hj', h: 'Contact moyen / jour (h)', f: (v) => nf(v.contact / 3600 / nd, 1), v: (v) => v.contact },
+    { k: 'u', h: 'Utilisation (% de 24 h)', f: (v) => nf(v.contact / (nd * 864), 1) + ' %', v: (v) => v.contact },
+    { k: 'vm', h: 'Vit. max (km/h)', f: (v) => v.vmax, v: (v) => v.vmax },
+  ], { file: 'activite_vehicules', per: 50 });
+  actGridD.g.sort = 'km'; actGridD.g.dir = -1;
+  actGridD.g.setRows(V);
+}
+
+// ---- 2) Disponibilité ----
+function renderDispo(stats, pannes, from, to) {
+  const today = isoDay(new Date());
+  const fleet = dashFleet(), ids = new Set(fleet.map((d) => d.imei));
+  const days = dayList(from, to > today ? today : to); const nd = days.length || 1;
+  const pn = pannes.filter((p) => ids.has(p.imei));
+  const enPanne = (imei, j) => pn.some((p) => p.imei === imei && p.debut <= j && (!p.fin || p.fin >= j));
+  const act = new Set(stats.filter((s) => Number(s.km) >= 0.5 || s.contact_s >= 600).map((s) => s.imei + '|' + s.jour));
+  const keyOf = (j) => (nd > 62 ? j.slice(0, 7) : j);
+  const agg = {}, cat = {}; let tot = 0, ko = 0, dispoJ = 0, actJ = 0;
+  days.forEach((j) => fleet.forEach((d) => {
+    const k = keyOf(j), c = catOf(d), p = enPanne(d.imei, j);
+    agg[k] = agg[k] || { t: 0, ko: 0 }; cat[c] = cat[c] || { t: 0, ko: 0 };
+    agg[k].t++; cat[c].t++; tot++;
+    if (p) { agg[k].ko++; cat[c].ko++; ko++; } else { dispoJ++; if (act.has(d.imei + '|' + j)) actJ++; }
+  }));
+  const taux = tot ? 100 * (tot - ko) / tot : 100, util = dispoJ ? 100 * actJ / dispoJ : 0;
+  const nowKo = fleet.filter((d) => enPanne(d.imei, today)).length;
+  const ok = taux >= DISPO_OBJ;
+  $('dbBody').innerHTML = `<div class="kcards">
+      ${kcard('TAUX DE DISPONIBILITÉ', nf(taux, 1) + ' %', ok ? `objectif ${DISPO_OBJ} % atteint` : `sous l'objectif de ${DISPO_OBJ} %`, ok ? DC.green : DC.red)}
+      ${kcard('OBJECTIF', DISPO_OBJ + ' %', 'contractuel', DC.dark)}
+      ${kcard('EN PANNE AUJOURD\'HUI', `${nowKo} / ${fleet.length}`, 'véhicules immobilisés', nowKo ? DC.red : DC.green)}
+      ${kcard('JOURS D\'IMMOBILISATION', nf(ko), `sur ${nf(tot)} jours-véhicule`, DC.orange)}
+      ${kcard('TAUX D\'UTILISATION', nf(util, 1) + ' %', 'véhicules disponibles ayant roulé', DC.purple)}
+    </div>
+    <div class="dgrid2">
+      ${dcard('chDispoDay', nd > 62 ? 'Disponibilité par mois (%)' : 'Disponibilité par jour (%)')}
+      ${dcard('chDispoCat', 'Disponibilité par catégorie (%)')}
+    </div>
+    <h3 class="dh3" style="display:flex;justify-content:space-between;align-items:center">Pannes et immobilisations
+      <button class="btn2" id="pnNew" style="padding:5px 12px">+ Déclarer une panne</button></h3>
+    <div id="pnForm"></div><div id="pnList"></div>`;
+  const keys = Object.keys(agg).sort(), pct = (o) => +(o.t ? 100 * (o.t - o.ko) / o.t : 100).toFixed(1);
+  const vals = keys.map((k) => pct(agg[k])), mn = Math.min(90, ...vals);
+  dChart('chDispoDay', { data: { labels: keys.map(dLabel), datasets: [
+    { type: 'line', label: 'Disponibilité', data: vals, borderColor: DC.blue, backgroundColor: 'rgba(47,111,191,.12)', fill: true, tension: .25, pointRadius: 3, pointBackgroundColor: vals.map((v) => (v >= DISPO_OBJ ? DC.green : DC.red)) },
+    { type: 'line', label: `Objectif ${DISPO_OBJ} %`, data: keys.map(() => DISPO_OBJ), borderColor: DC.red, borderDash: [6, 4], pointRadius: 0, borderWidth: 2 }] },
+    options: { plugins: { legend: { display: true, position: 'bottom' } }, scales: { y: { min: Math.floor(mn / 5) * 5, max: 100 } } } });
+  const cats = Object.keys(cat).sort((a, b) => pct(cat[a]) - pct(cat[b])), cv = cats.map((c) => pct(cat[c]));
+  dChart('chDispoCat', { type: 'bar', data: { labels: cats, datasets: [{ data: cv, backgroundColor: cv.map((v) => (v >= DISPO_OBJ ? DC.green : DC.red)), borderRadius: 3 }] },
+    options: { indexAxis: 'y', scales: { x: { min: Math.floor(Math.min(90, ...cv) / 5) * 5, max: 100 } } } });
+  // liste des pannes
+  const dv = (p) => devices.get(p.imei);
+  const dur = (p) => Math.round((new Date((p.fin && p.fin < today ? p.fin : today) + 'T12:00:00') - new Date(p.debut + 'T12:00:00')) / 864e5) + 1;
+  $('pnList').innerHTML = pn.length ? `<div class="gw"><table class="gtbl dgrid"><thead><tr class="hd"><th>Véhicule</th><th>Catégorie</th><th>Type</th><th>Début</th><th>Fin</th><th>Durée</th><th>Motif</th><th></th></tr></thead><tbody>
+    ${pn.map((p) => `<tr><td>${esc(dv(p) ? label(dv(p)) : p.imei)}</td><td>${esc(dv(p) ? catOf(dv(p)) : '')}</td><td>${esc(PANNE_TYPES[p.type] || p.type)}</td>
+      <td>${fDay(p.debut)}</td><td>${p.fin ? fDay(p.fin) : '<span class="badge" style="background:#BD171E">En cours</span>'}</td><td>${dur(p)} j</td><td>${esc(p.motif || '')}</td>
+      <td style="white-space:nowrap">${p.fin ? '' : `<button class="btn2 pnEnd" data-id="${p.id}" style="padding:3px 10px">Remise en service</button>`}
+        <button class="btn2 pnEdit" data-id="${p.id}" style="padding:3px 10px">Modifier</button></td></tr>`).join('')}</tbody></table></div>`
+    : '<p class="msg">Aucune panne déclarée sur la période.</p>';
+  $('pnNew').onclick = () => panneForm({ type: 'mecanique', debut: today });
+  $('pnList').querySelectorAll('.pnEnd').forEach((b) => b.onclick = async () => {
+    const { error } = await sb.from('pannes').update({ fin: today }).eq('id', +b.dataset.id);
+    if (error) return showToast(error.message, 5000);
+    showToast('Véhicule remis en service.', 2000); loadDash();
+  });
+  $('pnList').querySelectorAll('.pnEdit').forEach((b) => b.onclick = () => panneForm({ ...pn.find((p) => p.id === +b.dataset.id) }));
+}
+function panneForm(p) {
+  const opts = [...devices.values()].sort((a, b) => label(a).localeCompare(label(b), 'fr', { numeric: true }))
+    .map((d) => `<option value="${d.imei}"${d.imei === p.imei ? ' selected' : ''}>${esc(label(d))} · ${esc(catOf(d))}</option>`).join('');
+  $('pnForm').innerHTML = `<div class="fform" style="max-width:720px"><b>${p.id ? 'Modifier la panne' : 'Déclarer une panne'}</b>
+    <div class="row2"><label>Véhicule<select id="pnV"><option value="">— choisir —</option>${opts}</select></label>
+      <label>Type<select id="pnT">${Object.entries(PANNE_TYPES).map(([k, v]) => `<option value="${k}"${k === p.type ? ' selected' : ''}>${v}</option>`).join('')}</select></label></div>
+    <div class="row2"><label>Début<input type="date" id="pnD" value="${p.debut || ''}"></label>
+      <label>Remise en service (vide = toujours en panne)<input type="date" id="pnF" value="${p.fin || ''}"></label></div>
+    <label>Motif<input id="pnM" value="${esc(p.motif || '')}" placeholder="ex. embrayage, pneu, boîtier débranché…"></label>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" id="pnS" style="width:auto;padding:8px 14px">Enregistrer</button><button class="btn2" id="pnX">Annuler</button>
+    ${p.id && isAdmin ? '<button class="btn2" id="pnDel" style="color:#BD171E;border-color:#BD171E">Supprimer</button>' : ''}</div></div>`;
+  $('pnX').onclick = () => { $('pnForm').innerHTML = ''; };
+  $('pnS').onclick = async () => {
+    const body = { imei: $('pnV').value, type: $('pnT').value, debut: $('pnD').value, fin: $('pnF').value || null, motif: $('pnM').value.trim() || null };
+    if (!body.imei || !body.debut) return showToast('Choisis le véhicule et la date de début.', 3000);
+    if (body.fin && body.fin < body.debut) return showToast('La remise en service est avant le début.', 3000);
+    const { error } = p.id ? await sb.from('pannes').update(body).eq('id', p.id) : await sb.from('pannes').insert(body);
+    if (error) return showToast(error.message, 5000);
+    showToast('Panne enregistrée.', 2000); loadDash();
+  };
+  if ($('pnDel')) $('pnDel').onclick = async () => {
+    const b = $('pnDel'); if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = 'Confirmer la suppression'; return; }
+    const { error } = await sb.from('pannes').delete().eq('id', p.id);
+    if (error) return showToast(error.message, 5000);
+    loadDash();
+  };
+  $('pnForm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+// ---- 3) Exécution des circuits ----
+function renderCirc(rr, from, to) {
+  const lot = $('dbLot').value, cat = $('dbCat').value;
+  const rows = rr.filter((r) => { const d = devices.get(r.imei); return (!lot || (d && lotOf(d) === lot)) && (!cat || (d ? catOf(d) : r.categorie || 'Sans catégorie') === cat); });
+  const etat = (r) => (Number(r.taux) >= Number(r.seuil ?? 90) ? 'ok' : Number(r.taux) >= 10 ? 'part' : 'ko');
+  const n = rows.length, nOk = rows.filter((r) => etat(r) === 'ok').length, nP = rows.filter((r) => etat(r) === 'part').length, nKo = n - nOk - nP;
+  const moy = n ? rows.reduce((a, r) => a + Number(r.taux || 0), 0) / n : 0;
+  const ton = rows.reduce((a, r) => a + Number(r.tonnage_kg || 0), 0) / 1000;
+  const pc = (x) => (n ? nf(100 * x / n, 1) + ' %' : '–');
+  $('dbBody').innerHTML = `<div class="kcards">
+      ${kcard('CIRCUITS PLANIFIÉS', nf(n), `${dayList(from, to).length} jour(s)`)}
+      ${kcard('CONFORMES', nf(nOk), pc(nOk), DC.green)}
+      ${kcard('PARTIELS', nf(nP), pc(nP), DC.orange)}
+      ${kcard('NON EXÉCUTÉS', nf(nKo), pc(nKo) + ' · taux < 10 %', DC.red)}
+      ${kcard('TAUX MOYEN DE RÉALISATION', nf(moy, 1) + ' %', 'moyenne des circuits', tauxCol(moy, 90))}
+      ${kcard('TONNAGE', nf(ton, 1) + ' t', 'feuilles de route', DC.dark)}
+    </div>
+    ${n ? `<div class="dgrid2">
+      ${dcard('chCiSt', 'Répartition des circuits')}
+      ${dcard('chCiDay', 'Taux moyen de réalisation par jour (%)')}
+      ${dcard('chCiPref', 'Taux moyen par préfecture (%)')}
+      ${dcard('chCiCat', 'Résultats par catégorie d\'engin')}
+    </div>
+    <h3 class="dh3">Détail par circuit</h3><div id="dbCiGrid"></div>` : '<p class="msg">Aucun résultat de circuit sur la période (planning ou calcul manquant).</p>'}`;
+  if (!n) return;
+  dChart('chCiSt', { type: 'doughnut', data: { labels: ['Conformes', 'Partiels', 'Non exécutés'], datasets: [{ data: [nOk, nP, nKo], backgroundColor: [DC.green, DC.orange, DC.red] }] },
+    options: { cutout: '60%', plugins: { legend: { display: true, position: 'right' } } } });
+  const g = (keyFn) => { const o = {}; rows.forEach((r) => { const k = keyFn(r); o[k] = o[k] || { s: 0, n: 0, ok: 0, p: 0, ko: 0 }; o[k].s += Number(r.taux || 0); o[k].n++; o[k][etat(r) === 'part' ? 'p' : etat(r)]++; }); return o; };
+  const byD = g((r) => r.jour), dk = Object.keys(byD).sort();
+  dChart('chCiDay', { data: { labels: dk.map(dLabel), datasets: [
+    { type: 'line', label: 'Taux moyen', data: dk.map((k) => +(byD[k].s / byD[k].n).toFixed(1)), borderColor: DC.blue, backgroundColor: 'rgba(47,111,191,.12)', fill: true, tension: .25, pointRadius: 3 },
+    { type: 'line', label: 'Seuil 90 %', data: dk.map(() => 90), borderColor: DC.red, borderDash: [6, 4], pointRadius: 0, borderWidth: 2 }] },
+    options: { plugins: { legend: { display: true, position: 'bottom' } }, scales: { y: { min: 0, max: 100 } } } });
+  const byP = g((r) => r.prefecture || 'Non renseignée'), pk = Object.keys(byP).sort(), pv = pk.map((k) => +(byP[k].s / byP[k].n).toFixed(1));
+  dChart('chCiPref', { type: 'bar', data: { labels: pk, datasets: [{ data: pv, backgroundColor: pv.map((v) => tauxCol(v, 90)), borderRadius: 3 }] }, options: { scales: { y: { min: 0, max: 100 } } } });
+  const byC = g((r) => { const d = devices.get(r.imei); return d ? catOf(d) : r.categorie || 'Sans catégorie'; }), ck = Object.keys(byC).sort();
+  dChart('chCiCat', { type: 'bar', data: { labels: ck, datasets: [
+    { label: 'Conformes', data: ck.map((k) => byC[k].ok), backgroundColor: DC.green },
+    { label: 'Partiels', data: ck.map((k) => byC[k].p), backgroundColor: DC.orange },
+    { label: 'Non exécutés', data: ck.map((k) => byC[k].ko), backgroundColor: DC.red }] },
+    options: { plugins: { legend: { display: true, position: 'bottom' } }, scales: { x: { stacked: true }, y: { stacked: true, ticks: { precision: 0 } } } } });
+  const byCi = {}; rows.forEach((r) => { const k = r.circuit_code; const o = byCi[k] = byCi[k] || { code: k, name: r.circuit_name, pref: r.prefecture, s: 0, n: 0, ok: 0, p: 0, ko: 0, t: 0, veh: new Set() };
+    o.s += Number(r.taux || 0); o.n++; o[etat(r) === 'part' ? 'p' : etat(r)]++; o.t += Number(r.tonnage_kg || 0); if (r.vehicule) o.veh.add(r.vehicule); });
+  const cg = new Grid($('dbCiGrid'), [
+    { k: 'c', h: 'Circuit', f: (o) => o.code },
+    { k: 'nm', h: 'Nom', f: (o) => o.name || '' },
+    { k: 'pf', h: 'Préfecture', f: (o) => o.pref || '' },
+    { k: 'vh', h: 'Véhicule(s)', f: (o) => [...o.veh].join(', ') },
+    { k: 'n', h: 'Planifiés', f: (o) => o.n, v: (o) => o.n },
+    { k: 'ok', h: 'Conformes', f: (o) => o.ok, v: (o) => o.ok },
+    { k: 'p', h: 'Partiels', f: (o) => o.p, v: (o) => o.p },
+    { k: 'ko', h: 'Non exécutés', f: (o) => o.ko, v: (o) => o.ko },
+    { k: 'tx', h: 'Taux moyen', f: (o) => nf(o.s / o.n, 1) + ' %', v: (o) => o.s / o.n,
+      html: (o) => { const t = o.s / o.n; return `<span class="mini"><i style="width:${t}%;background:${tauxCol(t, 90)}"></i></span>${nf(t, 1)} %`; } },
+    { k: 't', h: 'Tonnage (t)', f: (o) => nf(o.t / 1000, 2), v: (o) => o.t },
+  ], { file: 'execution_circuits', per: 50 });
+  cg.sort = 'tx'; cg.dir = 1; cg.setRows(Object.values(byCi));
+}
+
+// ---- 4) Statut flotte / GPS ----
+const FLT = {
+  move: { t: 'En mouvement', c: DC.green }, idle: { t: 'Moteur allumé à l\'arrêt', c: DC.orange }, stop: { t: 'À l\'arrêt', c: '#2563eb' },
+  off: { t: 'Hors ligne (< 24 h)', c: DC.grey }, dead: { t: 'Inactif + 24 h', c: DC.red },
+};
+function fltState(d) {
+  if (!d.last) return 'dead';
+  const s = status(d.last);
+  if (s !== 'off') return s;
+  return Date.now() - new Date(d.last.ts) > 864e5 ? 'dead' : 'off';
+}
+function renderFlt(pannes) {
+  const fleet = dashFleet();
+  const pOf = new Map(); pannes.forEach((p) => { if (!pOf.has(p.imei)) pOf.set(p.imei, p); });
+  const V = fleet.map((d) => ({ d, s: fltState(d), p: pOf.get(d.imei) }));
+  const cnt = (k) => V.filter((v) => v.s === k).length, nP = V.filter((v) => v.p).length, nGps = V.filter((v) => v.p && v.p.type === 'gps').length;
+  const on = cnt('move') + cnt('idle') + cnt('stop');
+  $('dbBody').innerHTML = `<div class="kcards">
+      ${kcard('PARC TOTAL', nf(fleet.length), 'véhicules équipés')}
+      ${kcard('GPS ACTIFS', `${on} (${fleet.length ? nf(100 * on / fleet.length, 1) : 0} %)`, 'données reçues < ' + OFFLINE_MIN + ' min', DC.green)}
+      ${kcard('EN MOUVEMENT', nf(cnt('move')), `ralenti : ${cnt('idle')} · arrêt : ${cnt('stop')}`, DC.green)}
+      ${kcard('HORS LIGNE', nf(cnt('off')), 'depuis moins de 24 h', DC.grey)}
+      ${kcard('INACTIFS + 24 H', `${cnt('dead')} (${fleet.length ? nf(100 * cnt('dead') / fleet.length, 1) : 0} %)`, 'à vérifier', DC.red)}
+      ${kcard('EN PANNE', nf(nP), `dont ${nGps} panne(s) GPS`, nP ? DC.red : DC.green)}
+    </div>
+    <div class="dgrid2">
+      ${dcard('chFltSt', 'Statut GPS des véhicules')}
+      ${dcard('chFltCat', 'Statut par catégorie')}
+    </div>
+    <h3 class="dh3">Détail par véhicule <small class="msg" style="font-weight:400">mise à jour automatique chaque minute</small></h3><div id="dbFltGrid"></div>`;
+  const ks = Object.keys(FLT);
+  dChart('chFltSt', { type: 'doughnut', data: { labels: ks.map((k) => FLT[k].t), datasets: [{ data: ks.map(cnt), backgroundColor: ks.map((k) => FLT[k].c) }] },
+    options: { cutout: '60%', plugins: { legend: { display: true, position: 'right' } } } });
+  const cats = [...new Set(V.map((v) => catOf(v.d)))].sort((a, b) => a.localeCompare(b, 'fr', { numeric: true }));
+  dChart('chFltCat', { type: 'bar', data: { labels: cats, datasets: ks.map((k) => ({ label: FLT[k].t, backgroundColor: FLT[k].c, data: cats.map((c) => V.filter((v) => v.s === k && catOf(v.d) === c).length) })) },
+    options: { indexAxis: 'y', plugins: { legend: { display: true, position: 'bottom' } }, scales: { x: { stacked: true, ticks: { precision: 0 } }, y: { stacked: true } } } });
+  const fg = new Grid($('dbFltGrid'), [
+    { k: 'veh', h: 'Véhicule', f: (v) => label(v.d) },
+    { k: 'lot', h: 'Lot', f: (v) => lotOf(v.d) },
+    { k: 'cat', h: 'Catégorie', f: (v) => catOf(v.d) },
+    { k: 'st', h: 'Statut', f: (v) => FLT[v.s].t, html: (v) => `<span class="badge" style="background:${FLT[v.s].c}">${FLT[v.s].t}</span>` },
+    { k: 'last', h: 'Dernière donnée', f: (v) => (v.d.last ? ago(v.d.last.ts) : 'jamais'), v: (v) => (v.d.last ? new Date(v.d.last.ts).getTime() : 0) },
+    { k: 'spd', h: 'Vitesse', f: (v) => (v.d.last ? v.d.last.speed + ' km/h' : ''), v: (v) => (v.d.last ? v.d.last.speed : -1) },
+    { k: 'v', h: 'Tension', f: (v) => (v.d.last && v.d.last.ext_voltage != null ? nf(v.d.last.ext_voltage, 1) + ' V' : ''), v: (v) => (v.d.last ? v.d.last.ext_voltage || 0 : 0) },
+    { k: 'pn', h: 'Panne', f: (v) => (v.p ? `${PANNE_TYPES[v.p.type] || v.p.type}${v.p.motif ? ' : ' + v.p.motif : ''} (depuis ${fDay(v.p.debut)})` : ''),
+      html: (v) => (v.p ? `<span class="badge" style="background:#BD171E">${esc(PANNE_TYPES[v.p.type] || v.p.type)}</span> ${esc(v.p.motif || '')}` : '') },
+  ], { file: 'statut_flotte', per: 100, rowClick: (v) => openDetail(v.d.imei) });
+  fg.sort = 'last'; fg.dir = 1; fg.setRows(V);
+}
+async function dashRecalc() {
+  const from = $('dbFrom').value, to = $('dbTo').value;
+  showToast('Calcul des statistiques de la période…');
+  const { data, error } = await sb.rpc('calculer_stats_periode', { p_from: from, p_to: to });
+  if (error) return showToast(error.message, 6000);
+  showToast(`${data} ligne(s) calculée(s).`, 2500); loadDash();
+}
+
 // ---------- Interface ----------
 let curTab = 'live';
 document.querySelectorAll('.rb[data-tab]').forEach((b) => b.onclick = () => {
@@ -3237,7 +3632,7 @@ document.querySelectorAll('.rb[data-tab]').forEach((b) => b.onclick = () => {
   if (tab !== 'hist') playStop();
   closeDatePickers();
   ['live', 'hist', 'circ', 'rep', 'bacs'].forEach((k) => { $('tab-' + k).hidden = k !== tab; });
-  const FULL = { rep: 'report', data: 'dataPanel', kpi: 'kpiPanel', fdr: 'fdrPanel', adm: 'admPanel', alr: 'alrPanel' };
+  const FULL = { rep: 'report', data: 'dataPanel', kpi: 'kpiPanel', fdr: 'fdrPanel', adm: 'admPanel', alr: 'alrPanel', dash: 'dashPanel' };
   const full = !!FULL[tab];
   Object.entries(FULL).forEach(([k, id]) => { $(id).hidden = k !== tab; });
   // calques de la carte
@@ -3254,6 +3649,7 @@ document.querySelectorAll('.rb[data-tab]').forEach((b) => b.onclick = () => {
   if (tab === 'data' && !execGrid.rows.length) loadData();
   if (tab === 'kpi' && !kpiRows.length) loadKpi();
   if (tab === 'fdr') loadFdr();
+  if (tab === 'dash') { fillDashFilters(); loadDash(); } else clearInterval(dashTimer);
   if (tab === 'alr') alrTab(document.querySelector('#alrPanel .mtabs button.on').dataset.l);
   if (tab === 'adm') admTab(document.querySelector('#admPanel .mtabs button.on').dataset.a);
   if (!full) setTimeout(() => map.invalidateSize(), 30);
@@ -3328,6 +3724,16 @@ $('fArr').onchange = renderFdr;
 $('fAdd').onclick = () => fdrForm(null);
 $('fDup').onclick = fdrCopyYesterday;
 $('fImp').onclick = () => $('fFile').click();
+// Tableau de bord
+if (typeof Chart !== 'undefined') { Chart.defaults.font.family = getComputedStyle(document.body).fontFamily; Chart.defaults.color = '#4b5563'; Chart.defaults.locale = 'fr-FR'; }
+document.querySelectorAll('#dashPanel .mtabs button').forEach((b) => b.onclick = () => dashSetTab(b.dataset.d));
+document.querySelectorAll('#dbPresets button').forEach((b) => b.onclick = () => dashPreset(b.dataset.p));
+$('dbFrom').onchange = $('dbTo').onchange = () => { document.querySelectorAll('#dbPresets button').forEach((x) => x.classList.remove('on')); loadDash(); };
+$('dbLot').onchange = $('dbCat').onchange = loadDash;
+$('dbRecalc').onclick = dashRecalc;
+$('dbNow').onclick = () => loadFleet(false).then(loadDash);
+$('dbPrint').onclick = () => window.print();
+(() => { const t = new Date(), a = new Date(t); a.setDate(1); $('dbFrom').value = isoDay(a); $('dbTo').value = isoDay(t); })();
 // Bacs
 let bacsLoaded = false;
 $('bJour').value = isoDay(new Date());
