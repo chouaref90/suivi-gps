@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>GPS TEST – Suivi GPS</title>
+<title>SOS RABAT – Suivi GPS</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
   :root {
@@ -275,6 +275,17 @@
   #acMap { height: 340px; border: 1px solid var(--border); }
   @media (max-width: 900px) { .acgrid { grid-template-columns: 1fr; } }
 
+  /* bacs */
+  .bsum { display: flex; align-items: center; gap: 8px; padding: 5px 6px; font-size: 13px; cursor: pointer; border-radius: 4px; }
+  .bsum span:first-child { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .bsum:hover, .bitem:hover { background: var(--bg2); }
+  .bitem { display: flex; gap: 10px; align-items: flex-start; padding: 7px 6px; border-bottom: 1px solid var(--border); cursor: pointer; font-size: 13px; }
+  .bitem .dot { width: 12px; height: 12px; border-radius: 50%; flex: none; margin-top: 3px; border: 2px solid #fff; box-shadow: 0 0 0 1px #9ca3af; }
+  .bacts { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin: 8px 0; }
+  .bacts .btn2 { width: 100%; padding: 6px 8px; }
+  .blg { display: flex; gap: 12px; font-size: 12px; color: var(--muted); margin: 6px 0; }
+  .blg i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 4px; vertical-align: -1px; }
+
   /* alertes */
   .rb .bdg { position: absolute; top: 6px; right: 8px; min-width: 18px; height: 18px; border-radius: 9px; background: #BD171E; color: #fff;
     font-size: 11px; font-weight: 700; line-height: 18px; padding: 0 4px; box-shadow: 0 0 0 2px #fff; }
@@ -392,6 +403,7 @@
   <button class="rb" data-tab="fdr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2.8h6V4M8.5 10h7M8.5 14h7M8.5 18h4"/></svg><span class="tip">Feuille de route</span></button>
   <button class="rb" data-tab="rep"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M7 14h3M7 17h3M13 14h4"/></svg><span class="tip">Résultats & planning</span></button>
   <div class="rail-sp"></div>
+  <button class="rb" data-tab="bacs"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 7h16"/><path d="M9 7V4h6v3"/><path d="M6 7l1.2 13h9.6L18 7"/><path d="M10 11v6M14 11v6"/></svg><span class="tip">Bacs</span></button>
   <button class="rb" data-tab="alr" id="rbAlert"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="bdg" id="alBadge" hidden>0</span><span class="tip">Alertes</span></button>
   <button class="rb" data-tab="adm" id="rbAdmin" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="tip">Administration</span></button>
   <span id="live" class="live-dot" title="Connexion…"></span>
@@ -480,6 +492,31 @@
     <button class="btn" id="cGo">Calculer le taux de réalisation</button>
     <button class="btn2" id="cGuide" style="width:100%;margin-top:8px">Ouvrir le guidage chauffeur (téléphone)</button>
     <div id="cRes"></div>
+  </div></section>
+
+  <section id="tab-bacs" hidden><div class="pad">
+    <div class="row2">
+      <label>Jour<input type="date" id="bJour"></label>
+      <label>Circuit<select id="bCirc"></select></label>
+    </div>
+    <div class="row2">
+      <label>Type<select id="bType"></select></label>
+      <label>État<select id="bEtat"><option value="">Tous</option><option value="ok">Collectés</option><option value="ko">Non collectés</option></select></label>
+    </div>
+    <label>Recherche<input id="bSearch" placeholder="Code, adresse…"></label>
+    <div class="blg"><span><i style="background:#16a34a"></i>Collecté</span><span><i style="background:#BD171E"></i>Non collecté</span><span><i style="background:#9ca3af"></i>Inactif</span></div>
+    <div class="stats" id="bStats"></div>
+    <div class="bacts">
+      <button class="btn2" id="bRecalc">Recalculer la journée</button>
+      <button class="btn2" id="bCsv">Exporter</button>
+      <button class="btn2 badm" id="bImp" hidden>Importer Excel</button>
+      <button class="btn2 badm" id="bAdd" hidden>+ Ajouter un bac</button>
+      <button class="btn2 badm" id="bPrm" hidden>Règle de collecte</button>
+    </div>
+    <input type="file" id="bFile" accept=".xlsx,.xls,.csv" hidden>
+    <div id="bForm"></div>
+    <div id="bCircSum"></div>
+    <div id="bList"></div>
   </div></section>
 
   <section id="tab-rep" hidden></section>
@@ -634,7 +671,7 @@
 <script>
 // ======= CONFIGURATION =======
 const SUPABASE_URL = 'https://zhhpkuxkqzxttdaqwpyx.supabase.co';
-const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoaHBrdXhrcXp4dHRkYXF3cHl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxMTUzNjEsImV4cCI6MjEwODY5MTM2MX0.oKbDSNa1qV-8NXm_g3IhNIvBluifDep1w98s9-Asrzk';   // clé anon / publishable (PAS la service_role)
+const SUPABASE_ANON_KEY = 'COLLE_ICI_LA_CLE_ANON';   // clé anon / publishable (PAS la service_role)
 const OFFLINE_MIN = 15;                              // minutes sans données => hors ligne
 const ALERT_HOURS = 24;                              // au-delà : point d'alerte sur la carte du véhicule
 const SUPPORT_CONTACT = '';   // ex. 'mailto:support@tondomaine.ma' ou 'tel:+212600000000' (vide = lien masqué)
@@ -2441,6 +2478,7 @@ async function checkAdmin() {
   const { data, error } = await sb.rpc('is_admin');
   isAdmin = !error && data === true;
   $('rbAdmin').hidden = !isAdmin;
+  document.querySelectorAll('.badm').forEach((b) => { b.hidden = !isAdmin; });
   $('alSetBtn').hidden = !isAdmin;
 }
 function admTab(t) {
@@ -2910,6 +2948,216 @@ function alrTab(t) {
   if (t === 'list') loadAlerts(); else { loadAlertRules(); renderZonesAdmin(); }
 }
 
+
+// =====================================================================
+//  CARTOGRAPHIE DES BACS
+// =====================================================================
+const bacsLayer = L.layerGroup();
+const bacsRenderer = L.canvas({ padding: 0.3 });
+let bacsRows = [], bacsMk = new Map(), bacAddMode = false, bacDraft = null, bacsParams = null;
+const BAC_COL = { ok: '#16a34a', ko: '#BD171E', off: '#9ca3af' };
+const bacState = (b) => (!b.actif ? 'off' : Number(b.nb_collectes) > 0 ? 'ok' : 'ko');
+const BAC_TYPES = ['660L plastique', '660L galvanisé', '1100L plastique', '1100L galvanisé', 'Caisson 6m3', 'Colonne aérienne 3m3'];
+
+async function loadBacs(fit) {
+  const jour = $('bJour').value;
+  const [{ data, error }, prm] = await Promise.all([sb.rpc('bacs_etat', { p_jour: jour }), sb.from('bacs_params').select('*').eq('id', 1)]);
+  if (error) { showErr('Bacs : ' + error.message + (/bacs/.test(error.message) ? ' (as-tu exécuté bacs_v13.sql ?)' : '')); return; }
+  bacsRows = data; bacsParams = prm.data && prm.data[0];
+  // filtres
+  const types = [...new Set(data.map((b) => b.type).filter(Boolean))].sort();
+  const circs = [...new Set(data.map((b) => b.circuit_code).filter(Boolean))].sort((a, b) => a.localeCompare(b, 'fr', { numeric: true }));
+  const keep = (id, opts, first) => { const cur = $(id).value; $(id).innerHTML = `<option value="">${first}</option>` + opts.map((o) => `<option${o === cur ? ' selected' : ''}>${esc(o)}</option>`).join(''); };
+  keep('bType', types, 'Tous les types');
+  keep('bCirc', circs.concat(data.some((b) => !b.circuit_code) ? ['(sans circuit)'] : []), 'Tous les circuits');
+  drawBacs(fit);
+}
+function bacsFiltered() {
+  const q = $('bSearch').value.trim().toLowerCase(), t = $('bType').value, c = $('bCirc').value, e = $('bEtat').value;
+  return bacsRows.filter((b) => (!t || b.type === t) && (!c || (c === '(sans circuit)' ? !b.circuit_code : b.circuit_code === c))
+    && (!e || bacState(b) === e) && (!q || `${b.code || ''} ${b.adresse || ''} ${b.secteur || ''}`.toLowerCase().includes(q)));
+}
+function bacPopup(b) {
+  const st = bacState(b);
+  return `<b>${esc(b.code || 'Bac #' + b.id)}</b> <small>${esc(b.type || '')}</small><br>
+    ${b.adresse ? esc(b.adresse) + '<br>' : ''}${b.circuit_code ? 'Circuit ' + esc(b.circuit_code) + '<br>' : ''}
+    <b style="color:${BAC_COL[st]}">${st === 'ok' ? 'Collecté' : st === 'off' ? 'Inactif' : 'Non collecté'}</b>
+    ${st === 'ok' ? `<br>${fmtHour(b.premiere)} par ${esc(b.vehicule || b.imei)} (arrêt ${Math.round((b.duree_s || 0) / 60)} min)${b.nb_collectes > 1 ? `<br>${b.nb_collectes} arrêts ce jour` : ''}` : ''}
+    <div style="margin-top:6px;display:flex;gap:10px"><a href="#" onclick="bacHistory(${b.id});return false">Historique 7 jours</a>
+    ${isAdmin ? `<a href="#" onclick="bacEdit(${b.id});return false">Modifier</a>` : ''}</div><div id="bh${b.id}"></div>`;
+}
+function drawBacs(fit) {
+  bacsLayer.clearLayers(); bacsMk.clear();
+  const list = bacsFiltered();
+  list.forEach((b) => {
+    const st = bacState(b);
+    const m = L.circleMarker([b.lat, b.lng], { renderer: bacsRenderer, radius: 6, color: '#fff', weight: 1.5, fillColor: BAC_COL[st], fillOpacity: 0.95 })
+      .bindPopup(() => bacPopup(b)).addTo(bacsLayer);
+    bacsMk.set(b.id, m);
+  });
+  const act = bacsRows.filter((b) => b.actif), ok = act.filter((b) => Number(b.nb_collectes) > 0).length;
+  const pct = act.length ? (100 * ok / act.length) : 0;
+  $('bStats').innerHTML = `<div class="stat"><b style="color:${tauxCol(pct, 90)}">${pct.toFixed(1)} %</b><small>Taux de collecte</small></div>
+    <div class="stat"><b>${ok} / ${act.length}</b><small>Bacs collectés</small></div>
+    <div class="stat"><b style="color:#BD171E">${act.length - ok}</b><small>Non collectés</small></div>
+    <div class="stat"><b>${bacsParams ? `${bacsParams.rayon_m} m · ${bacsParams.duree_min} min` : '—'}</b><small>Règle (distance · arrêt)</small></div>`;
+  // synthèse par circuit
+  const byC = {};
+  act.forEach((b) => { const k = b.circuit_code || '(sans circuit)'; byC[k] = byC[k] || { n: 0, ok: 0 }; byC[k].n++; if (Number(b.nb_collectes) > 0) byC[k].ok++; });
+  const keys = Object.keys(byC).sort((a, b) => a.localeCompare(b, 'fr', { numeric: true }));
+  $('bCircSum').innerHTML = keys.length ? `<div class="msg" style="margin:10px 0 4px">Par circuit :</div>` + keys.map((k) => {
+    const t = 100 * byC[k].ok / byC[k].n;
+    return `<div class="bsum" data-c="${esc(k)}"><span>${esc(k)}</span><span class="mini"><i style="width:${t}%;background:${tauxCol(t, 90)}"></i></span><b>${byC[k].ok}/${byC[k].n}</b></div>`;
+  }).join('') : '';
+  $('bCircSum').querySelectorAll('[data-c]').forEach((el) => el.onclick = () => { $('bCirc').value = el.dataset.c; drawBacs(true); });
+  // liste (non collectés en premier)
+  const sorted = list.slice().sort((a, b) => (bacState(a) === 'ko' ? 0 : 1) - (bacState(b) === 'ko' ? 0 : 1) || String(a.code).localeCompare(String(b.code), 'fr', { numeric: true }));
+  $('bList').innerHTML = `<div class="msg" style="margin:10px 0 4px">${list.length} bac(s) affiché(s)${list.length > 300 ? ' — 300 premiers dans la liste' : ''}</div>` +
+    sorted.slice(0, 300).map((b) => { const st = bacState(b);
+      return `<div class="bitem" data-id="${b.id}"><span class="dot" style="background:${BAC_COL[st]}"></span><div style="flex:1;min-width:0">
+        <b>${esc(b.code || 'Bac #' + b.id)}</b> <small class="msg">${esc(b.type || '')}</small><br>
+        <small class="msg">${st === 'ok' ? `${fmtHour(b.premiere)} · ${esc(b.vehicule || '')} · ${Math.round((b.duree_s || 0) / 60)} min` : esc(b.adresse || (b.circuit_code ? 'Circuit ' + b.circuit_code : ''))}</small></div></div>`; }).join('');
+  $('bList').querySelectorAll('.bitem').forEach((el) => el.onclick = () => {
+    const m = bacsMk.get(+el.dataset.id); if (!m) return;
+    map.flyTo(m.getLatLng(), 18); setTimeout(() => m.openPopup(), 500);
+  });
+  if (fit && list.length) map.fitBounds(L.latLngBounds(list.map((b) => [b.lat, b.lng])), { padding: [30, 30], maxZoom: 17 });
+}
+async function bacHistory(id) {
+  const since = new Date(); since.setDate(since.getDate() - 6);
+  const { data, error } = await sb.from('collectes_list').select('*').eq('bac_id', id).gte('jour', isoDay(since)).order('debut', { ascending: false });
+  const el = document.getElementById('bh' + id); if (!el) return;
+  el.innerHTML = error ? esc(error.message) : data.length
+    ? `<div style="margin-top:6px;max-height:140px;overflow:auto">${data.map((c) => `${fDay(c.jour)} ${fmtHour(c.debut)} · ${esc(c.vehicule || c.imei)} · ${Math.round(c.duree_s / 60)} min`).join('<br>')}</div>`
+    : '<div class="msg">Aucune collecte sur 7 jours.</div>';
+}
+async function bacRecalc() {
+  showToast('Calcul des collectes de la journée…');
+  const { data, error } = await sb.rpc('detecter_collectes_jour', { p_jour: $('bJour').value });
+  if (error) return showErr(error.message);
+  showToast(`${data} collecte(s) détectée(s).`, 3000);
+  loadBacs(false);
+}
+function bacExport() {
+  const rows = bacsFiltered();
+  const head = ['Code', 'Type', 'Adresse', 'Secteur', 'Circuit', 'Latitude', 'Longitude', 'État', '1re collecte', 'Véhicule', 'Durée arrêt (min)', 'Nb arrêts'];
+  const lines = rows.map((b) => [b.code || '', b.type || '', b.adresse || '', b.secteur || '', b.circuit_code || '', b.lat, b.lng,
+    { ok: 'Collecté', ko: 'Non collecté', off: 'Inactif' }[bacState(b)], b.premiere ? fmtTime(b.premiere) : '', b.vehicule || '', b.duree_s ? Math.round(b.duree_s / 60) : '', b.nb_collectes]);
+  const csv = '﻿' + [head, ...lines].map((l) => l.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\r\n');
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+  a.download = `collecte_bacs_${$('bJour').value}.csv`; a.click();
+}
+
+// ---------- Ajout / modification (administrateurs) ----------
+function bacForm(b) {
+  bacDraft = b;
+  const circOpts = [...circuits.values()].map((c) => `<option value="${esc(c.code)}"${c.code === b.circuit_code ? ' selected' : ''}>${esc(c.code)}</option>`).join('');
+  $('bForm').innerHTML = `<div class="fform"><b>${b.id ? 'Modifier le bac' : 'Nouveau bac'}</b> ${b.lat ? '' : '<span class="warn">clique sur la carte pour placer le bac</span>'}
+    <datalist id="dlBacT">${BAC_TYPES.map((t) => `<option value="${t}">`).join('')}</datalist>
+    <label>Code / tag<input id="bfCode" value="${esc(b.code || '')}"></label>
+    <label>Type<input id="bfType" list="dlBacT" value="${esc(b.type || '')}"></label>
+    <label>Adresse / emplacement<input id="bfAdr" value="${esc(b.adresse || '')}"></label>
+    <div class="row2"><label>Secteur<input id="bfSec" value="${esc(b.secteur || '')}"></label>
+      <label>Circuit<select id="bfCirc"><option value="">—</option>${circOpts}</select></label></div>
+    <label class="chk"><input type="checkbox" id="bfAct" ${b.actif !== false ? 'checked' : ''}> Actif</label>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" style="width:auto;padding:8px 14px" id="bfSave">Enregistrer</button>
+      <button class="btn2" id="bfX">Annuler</button>${b.id ? '<button class="btn2" id="bfDel" style="color:#BD171E;border-color:#BD171E">Supprimer</button>' : ''}</div></div>`;
+  $('bfX').onclick = () => { bacDraft = null; bacAddMode = false; $('bForm').innerHTML = ''; if (window._bacTmp) map.removeLayer(window._bacTmp); };
+  $('bfSave').onclick = async () => {
+    if (!bacDraft.lat) { showToast('Clique d\'abord sur la carte pour placer le bac.', 3000); return; }
+    const body = { code: $('bfCode').value.trim() || null, type: $('bfType').value.trim() || null, adresse: $('bfAdr').value.trim() || null,
+      secteur: $('bfSec').value.trim() || null, circuit_code: $('bfCirc').value || null, actif: $('bfAct').checked, lat: bacDraft.lat, lng: bacDraft.lng };
+    const { error } = bacDraft.id ? await sb.from('bacs').update(body).eq('id', bacDraft.id) : await sb.from('bacs').insert(body);
+    if (error) { showToast(error.message, 5000); return; }
+    $('bfX').click(); showToast('Bac enregistré.', 2000); loadBacs(false);
+  };
+  if (b.id) $('bfDel').onclick = async () => {
+    const btn = $('bfDel');
+    if (btn.dataset.sure !== '1') { btn.dataset.sure = '1'; btn.textContent = 'Confirmer la suppression'; return; }
+    const { error } = await sb.from('bacs').delete().eq('id', b.id);
+    if (error) { showToast(error.message, 5000); return; }
+    $('bfX').click(); loadBacs(false);
+  };
+}
+function bacEdit(id) { const b = bacsRows.find((x) => x.id === id); if (b) { map.closePopup(); bacForm({ ...b }); } }
+map.on('click', (e) => {
+  if (curTab !== 'bacs' || !bacDraft) return;
+  bacDraft.lat = e.latlng.lat; bacDraft.lng = e.latlng.lng;
+  if (window._bacTmp) map.removeLayer(window._bacTmp);
+  window._bacTmp = L.circleMarker(e.latlng, { radius: 8, color: '#fff', weight: 2, fillColor: '#f97316', fillOpacity: 1 }).addTo(map);
+  const keep = { code: $('bfCode').value, type: $('bfType').value, adresse: $('bfAdr').value, secteur: $('bfSec').value, circuit_code: $('bfCirc').value, actif: $('bfAct').checked };
+  bacForm({ ...bacDraft, ...keep });
+});
+
+// ---------- Import Excel / CSV (ex. export de l'app d'inventaire) ----------
+async function bacImport(file) {
+  if (typeof XLSX === 'undefined') return showErr('Bibliothèque Excel non chargée.');
+  const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+  const rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { defval: '' });
+  if (!rows.length) { showToast('Fichier vide.', 3000); return; }
+  const keys = Object.keys(rows[0]);
+  const low = (k) => k.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const find = (re) => keys.find((k) => re.test(low(k)));
+  const kLat = find(/^(lat|latitude)/), kLng = find(/^(lng|lon|long|longitude)/), kGps = find(/(gps|coord|position|localisation)/);
+  const kCode = find(/^(code|tag|n°|numero|id_bac|code_bac|identifiant)/) || find(/(code|tag)/);
+  const kType = find(/type/), kAdr = find(/(adresse|emplacement|rue|address|lieu)/), kSec = find(/secteur/), kCirc = find(/circuit/);
+  const num = (v) => { const x = Number(String(v).replace(',', '.').trim()); return isNaN(x) ? null : x; };
+  const out = [];
+  rows.forEach((r) => {
+    let lat = kLat ? num(r[kLat]) : null, lng = kLng ? num(r[kLng]) : null;
+    if ((lat === null || lng === null) && kGps) { const m = String(r[kGps]).match(/(-?\d+[.,]\d+)\s*[,; ]\s*(-?\d+[.,]\d+)/); if (m) { lat = num(m[1]); lng = num(m[2]); } }
+    if (lat === null || lng === null || !lat || !lng) return;
+    if (Math.abs(lat) < Math.abs(lng) && Math.abs(lng) > 20 && Math.abs(lat) < 20) [lat, lng] = [lng, lat];   // colonnes inversées
+    const circ = kCirc ? String(r[kCirc]).trim() : '';
+    out.push({ code: kCode ? String(r[kCode]).trim() || null : null, type: kType ? String(r[kType]).trim() || null : null,
+      adresse: kAdr ? String(r[kAdr]).trim() || null : null, secteur: kSec ? String(r[kSec]).trim() || null : null,
+      circuit_code: circ && [...circuits.values()].some((c) => c.code === circ) ? circ : null, lat, lng, actif: true, attrs: r });
+  });
+  if (!out.length) { showToast(`Aucune position GPS trouvée. Colonnes lues : ${keys.join(', ')}`, 7000); return; }
+  const withCode = out.filter((b) => b.code), noCode = out.filter((b) => !b.code);
+  const known = new Set(bacsRows.map((b) => b.code));
+  $('bForm').innerHTML = `<div class="fform"><b>Import : ${esc(file.name)}</b>
+    <p class="msg">${out.length} bac(s) avec position GPS sur ${rows.length} ligne(s).<br>
+    ${withCode.filter((b) => known.has(b.code)).length} déjà connus (mis à jour) · ${withCode.filter((b) => !known.has(b.code)).length + noCode.length} nouveaux.<br>
+    Colonnes reconnues : code = <b>${esc(kCode || '—')}</b>, type = <b>${esc(kType || '—')}</b>, GPS = <b>${esc(kLat && kLng ? kLat + ' / ' + kLng : kGps || '—')}</b></p>
+    <button class="btn" style="width:auto;padding:8px 14px" id="biGo">Importer</button> <button class="btn2" id="biX">Annuler</button><div class="msg" id="biMsg"></div></div>`;
+  $('biX').onclick = () => { $('bForm').innerHTML = ''; };
+  $('biGo').onclick = async () => {
+    $('biGo').disabled = true;
+    for (let i = 0; i < withCode.length; i += 200) {
+      $('biMsg').textContent = `Import… ${i}/${out.length}`;
+      const { error } = await sb.from('bacs').upsert(withCode.slice(i, i + 200), { onConflict: 'code' });
+      if (error) { $('biMsg').innerHTML = `<span style="color:#BD171E">${esc(error.message)}</span>`; $('biGo').disabled = false; return; }
+    }
+    for (let i = 0; i < noCode.length; i += 200) {
+      const { error } = await sb.from('bacs').insert(noCode.slice(i, i + 200));
+      if (error) { $('biMsg').innerHTML = `<span style="color:#BD171E">${esc(error.message)}</span>`; $('biGo').disabled = false; return; }
+    }
+    $('bForm').innerHTML = ''; showToast(`${out.length} bac(s) importé(s).`, 3000); loadBacs(true);
+  };
+}
+
+// ---------- Paramètres de détection (administrateurs) ----------
+function bacParamsForm() {
+  const p = bacsParams || { rayon_m: 20, duree_min: 5, categories: [] };
+  const cats = [...new Set([...devices.values()].map((d) => d.categorie).filter(Boolean))].sort();
+  $('bForm').innerHTML = `<div class="fform"><b>Règle de collecte</b>
+    <div class="row2"><label>Distance max au bac (m)<input type="number" id="bpR" value="${p.rayon_m}" min="5" step="5"></label>
+      <label>Arrêt minimum (min)<input type="number" id="bpD" value="${p.duree_min}" min="0.5" step="0.5"></label></div>
+    <div class="msg">Engins pris en compte (aucun coché = tous) :</div>
+    <div style="display:flex;flex-wrap:wrap;gap:6px 14px;margin:6px 0 10px">${cats.map((c) => `<label class="chk" style="margin:0"><input type="checkbox" data-cat="${esc(c)}" ${(p.categories || []).includes(c) ? 'checked' : ''}> ${esc(c)}</label>`).join('') || '<span class="msg">Aucune catégorie définie.</span>'}</div>
+    <button class="btn" style="width:auto;padding:8px 14px" id="bpSave">Enregistrer</button> <button class="btn2" id="bpX">Annuler</button>
+    <p class="msg">Après modification, clique sur « Recalculer la journée » pour appliquer la nouvelle règle aux jours déjà calculés.</p></div>`;
+  $('bpX').onclick = () => { $('bForm').innerHTML = ''; };
+  $('bpSave').onclick = async () => {
+    const body = { rayon_m: +$('bpR').value || 20, duree_min: +$('bpD').value || 5,
+      categories: [...document.querySelectorAll('[data-cat]:checked')].map((c) => c.dataset.cat) };
+    const { data, error } = await sb.from('bacs_params').update(body).eq('id', 1).select('id');
+    if (error || !data.length) { showToast(error ? error.message : 'Refusé (administrateur uniquement).', 4000); return; }
+    $('bForm').innerHTML = ''; showToast('Règle enregistrée.', 2000); loadBacs(false);
+  };
+}
+
 // ---------- Interface ----------
 let curTab = 'live';
 document.querySelectorAll('.rb[data-tab]').forEach((b) => b.onclick = () => {
@@ -2917,16 +3165,16 @@ document.querySelectorAll('.rb[data-tab]').forEach((b) => b.onclick = () => {
   const tab = curTab = b.dataset.tab;
   if (tab !== 'hist') playStop();
   closeDatePickers();
-  ['live', 'hist', 'circ', 'rep'].forEach((k) => { $('tab-' + k).hidden = k !== tab; });
+  ['live', 'hist', 'circ', 'rep', 'bacs'].forEach((k) => { $('tab-' + k).hidden = k !== tab; });
   const FULL = { rep: 'report', data: 'dataPanel', kpi: 'kpiPanel', fdr: 'fdrPanel', adm: 'admPanel', alr: 'alrPanel' };
   const full = !!FULL[tab];
   Object.entries(FULL).forEach(([k, id]) => { $(id).hidden = k !== tab; });
   // calques de la carte
   const want = {
     live: detImei ? [detLayer, overlayCirc, zonesLayer] : [fleetLayer, overlayCirc, zonesLayer],
-    hist: [histLayer], circ: [circLayer],
+    hist: [histLayer], circ: [circLayer], bacs: [bacsLayer],
   }[tab] || [];
-  [fleetLayer, overlayCirc, zonesLayer, detLayer, histLayer, circLayer].forEach((l) => (want.includes(l) ? l.addTo(map) : map.removeLayer(l)));
+  [fleetLayer, overlayCirc, zonesLayer, detLayer, histLayer, circLayer, bacsLayer].forEach((l) => (want.includes(l) ? l.addTo(map) : map.removeLayer(l)));
   $('mapwrap').hidden = full;
   $('trips').hidden = !(tab === 'live' && detImei && detTrips.length);
   $('side').hidden = full;
@@ -2939,6 +3187,7 @@ document.querySelectorAll('.rb[data-tab]').forEach((b) => b.onclick = () => {
   if (tab === 'adm') admTab(document.querySelector('#admPanel .mtabs button.on').dataset.a);
   if (!full) setTimeout(() => map.invalidateSize(), 30);
   if (tab === 'circ' && !circLayer.getLayers().length) showCircuit();
+  if (tab === 'bacs' && !bacsLoaded) { bacsLoaded = true; loadBacs(true); }
 });
 $('sideToggle').onclick = () => {
   document.body.classList.toggle('side-closed');
@@ -3008,6 +3257,19 @@ $('fArr').onchange = renderFdr;
 $('fAdd').onclick = () => fdrForm(null);
 $('fDup').onclick = fdrCopyYesterday;
 $('fImp').onclick = () => $('fFile').click();
+// Bacs
+let bacsLoaded = false;
+$('bJour').value = isoDay(new Date());
+$('bJour').onchange = () => loadBacs(false);
+$('bCirc').onchange = () => drawBacs(true);
+$('bType').onchange = $('bEtat').onchange = () => drawBacs(false);
+$('bSearch').oninput = () => drawBacs(false);
+$('bRecalc').onclick = bacRecalc;
+$('bCsv').onclick = bacExport;
+$('bImp').onclick = () => $('bFile').click();
+$('bFile').onchange = (e) => { const f = e.target.files[0]; e.target.value = ''; if (f) bacImport(f); };
+$('bAdd').onclick = () => { bacAddMode = true; bacDraft = { actif: true }; bacForm({ actif: true }); };
+$('bPrm').onclick = bacParamsForm;
 // Alertes
 document.querySelectorAll('#alrPanel .mtabs button').forEach((b) => b.onclick = () => alrTab(b.dataset.l));
 $('alGo').onclick = loadAlerts;
