@@ -263,6 +263,17 @@
   .tkrow { display: flex; gap: 6px; margin: 6px 0; max-width: 420px; }
   #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #111827; color: #fff; padding: 10px 16px; border-radius: 6px; z-index: 4000; font-size: 13px; box-shadow: 0 4px 14px rgba(0,0,0,.3); }
 
+  /* administration */
+  .atbl td { padding: 4px 6px; }
+  .atbl td input { padding: 5px 7px; font-size: 13px; min-width: 90px; }
+  .atbl tr.dirty td { background: #fff7e6 !important; }
+  .atbl td.mono { font-family: Consolas, monospace; font-size: 12px; color: #4b5563; }
+  .imp { border: 2px dashed #b9c6d8; border-radius: 8px; padding: 22px; text-align: center; background: #f8fafc; margin-bottom: 14px; }
+  .imp.over { border-color: var(--accent); background: #eef3fa; }
+  .acgrid { display: grid; grid-template-columns: minmax(280px, 1fr) 1.4fr; gap: 12px; }
+  #acMap { height: 340px; border: 1px solid var(--border); }
+  @media (max-width: 900px) { .acgrid { grid-template-columns: 1fr; } }
+
   /* ---- Rapports (anciens écrans) ---- */
   #report { position: absolute; inset: 0; overflow: auto; padding: 20px 24px; background: #fff; z-index: 1100; }
   #report h2 { margin: 0 0 12px; font-size: 20px; color: var(--accent-dark); }
@@ -363,6 +374,7 @@
   <button class="rb" data-tab="fdr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2.8h6V4M8.5 10h7M8.5 14h7M8.5 18h4"/></svg><span class="tip">Feuille de route</span></button>
   <button class="rb" data-tab="rep"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M7 14h3M7 17h3M13 14h4"/></svg><span class="tip">Résultats & planning</span></button>
   <div class="rail-sp"></div>
+  <button class="rb" data-tab="adm" id="rbAdmin" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="tip">Administration</span></button>
   <span id="live" class="live-dot" title="Connexion…"></span>
   <button class="rb" id="logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v9"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg><span class="tip" id="userMail">Déconnexion</span></button>
 </nav>
@@ -497,6 +509,37 @@
     <div id="fBody"></div>
   </div>
 
+  <div class="fp" id="admPanel" hidden>
+    <h2>Administration</h2>
+    <div class="mtabs"><button class="on" data-a="veh">Véhicules</button><button data-a="circ">Circuits</button></div>
+    <datalist id="dlLots"></datalist><datalist id="dlCats"></datalist>
+    <div id="admVeh">
+      <div class="rep-ctrl">
+        <input id="avSearch" placeholder="🔍 Rechercher (IMEI, nom, catégorie…)" style="max-width:280px">
+        <span class="msg" style="margin:0 0 0 8px">Pour les véhicules cochés :</span>
+        <input id="avBulkLot" list="dlLots" placeholder="Lot" style="max-width:120px">
+        <input id="avBulkCat" list="dlCats" placeholder="Catégorie" style="max-width:190px">
+        <button class="btn2" id="avBulk">Appliquer</button>
+        <span style="flex:1"></span>
+        <button class="btn2" id="avAdd">+ Ajouter un boîtier</button>
+        <button class="btn" id="avSave" disabled style="width:auto">Enregistrer les modifications</button>
+      </div>
+      <div id="avMsg" class="msg"></div>
+      <div class="gw"><table class="gtbl atbl" id="avTbl"></table></div>
+    </div>
+    <div id="admCirc" hidden>
+      <div class="imp" id="acDrop">
+        <b style="font-size:15px">Importer des circuits (shapefile)</b>
+        <p class="msg">Glisse ici un <b>.zip</b> du shapefile, ou les fichiers <b>.shp + .dbf + .prj</b> (+ .cpg). Les projections Lambert Maroc ou autres sont converties automatiquement grâce au .prj.</p>
+        <button class="btn" style="width:auto;padding:9px 18px" id="acPick">Choisir les fichiers</button>
+        <input type="file" id="acFile" multiple accept=".zip,.shp,.dbf,.prj,.cpg,.shx" hidden>
+      </div>
+      <div id="acPreview"></div>
+      <h3 style="color:var(--accent-dark)">Circuits existants</h3>
+      <div id="acList"></div>
+    </div>
+  </div>
+
   <div id="report" hidden>
     <h2>Taux de réalisation des circuits</h2>
     <div class="rep-ctrl">
@@ -540,6 +583,7 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/shpjs@4.0.4/dist/shp.min.js"></script>
 <script>
 // ======= CONFIGURATION =======
 const SUPABASE_URL = 'https://zhhpkuxkqzxttdaqwpyx.supabase.co';
@@ -2338,6 +2382,273 @@ async function fdrImport(file) {
   };
 }
 
+
+// =====================================================================
+//  ADMINISTRATION (réservé aux emails de la table app_admins)
+// =====================================================================
+let isAdmin = false;
+const avDirty = new Map();       // imei -> champs modifiés
+const avChecked = new Set();
+async function checkAdmin() {
+  const { data, error } = await sb.rpc('is_admin');
+  isAdmin = !error && data === true;
+  $('rbAdmin').hidden = !isAdmin;
+}
+function admTab(t) {
+  document.querySelectorAll('#admPanel .mtabs button').forEach((b) => b.classList.toggle('on', b.dataset.a === t));
+  $('admVeh').hidden = t !== 'veh'; $('admCirc').hidden = t !== 'circ';
+  if (t === 'veh') renderAdmVeh(); else loadAdmCirc();
+}
+
+// ---------- Véhicules ----------
+function renderAdmVeh() {
+  const q = $('avSearch').value.trim().toLowerCase();
+  const list = [...devices.values()].sort((a, b) => label(a).localeCompare(label(b), 'fr', { numeric: true }))
+    .filter((d) => !q || `${d.imei} ${d.name || ''} ${d.plate || ''} ${d.lot || ''} ${d.categorie || ''}`.toLowerCase().includes(q));
+  const lots = [...new Set([...devices.values()].map((d) => d.lot).filter(Boolean))].sort();
+  const cats = [...new Set([...devices.values()].map((d) => d.categorie).filter(Boolean).concat(['BOM 7M3', 'BOM 14M3', 'BOM 18M3', 'BOM 18M3 grue', 'Ampliroll',
+    'Aspirateurs', 'Balayeuses mécaniques', 'Bennes Satellites 3M3', 'Bennes satellites 5M3', 'Bennes TP', 'Chargeuses sur pneu', 'Chariots balayage',
+    'Laveuse de colonne', 'Laveuses de conteneurs', 'Laveuses mécaniques', 'Motocycles', 'Tricycles']))].sort((a, b) => a.localeCompare(b, 'fr', { numeric: true }));
+  $('dlLots').innerHTML = lots.map((l) => `<option value="${esc(l)}">`).join('');
+  $('dlCats').innerHTML = cats.map((l) => `<option value="${esc(l)}">`).join('');
+  const v = (d, k) => (avDirty.has(d.imei) && avDirty.get(d.imei)[k] !== undefined ? avDirty.get(d.imei)[k] : d[k]) ?? '';
+  $('avTbl').innerHTML = `<thead><tr><th><input type="checkbox" id="avAll"></th><th>IMEI</th><th>Nom / N° de parc</th><th>Immatriculation</th><th>Lot</th><th>Catégorie</th><th>Dernier signal</th></tr></thead>
+    <tbody>${list.map((d) => `<tr class="${avDirty.has(d.imei) ? 'dirty' : ''}" data-i="${d.imei}">
+      <td><input type="checkbox" data-c="${d.imei}" ${avChecked.has(d.imei) ? 'checked' : ''}></td>
+      <td class="mono">${esc(d.imei)}</td>
+      <td><input data-k="name" value="${esc(v(d, 'name'))}" placeholder="—"></td>
+      <td><input data-k="plate" value="${esc(v(d, 'plate'))}" placeholder="—"></td>
+      <td><input data-k="lot" list="dlLots" value="${esc(v(d, 'lot'))}" placeholder="—"></td>
+      <td><input data-k="categorie" list="dlCats" value="${esc(v(d, 'categorie'))}" placeholder="—"></td>
+      <td>${d.last ? `<span class="dot" style="background:${HEX[status(d.last)]}"></span> ${fmtDT(d.last.ts)}` : '<small class="msg">jamais connecté</small>'}</td></tr>`).join('')}</tbody>`;
+  $('avTbl').querySelectorAll('input[data-k]').forEach((i) => i.oninput = () => {
+    const imei = i.closest('tr').dataset.i, d = devices.get(imei);
+    const ch = avDirty.get(imei) || {};
+    const val = i.value.trim() || null;
+    if ((d[i.dataset.k] ?? null) === val) delete ch[i.dataset.k]; else ch[i.dataset.k] = val;
+    if (Object.keys(ch).length) avDirty.set(imei, ch); else avDirty.delete(imei);
+    i.closest('tr').classList.toggle('dirty', avDirty.has(imei));
+    avUpdBtn();
+  });
+  $('avTbl').querySelectorAll('input[data-c]').forEach((c) => c.onchange = () => { c.checked ? avChecked.add(c.dataset.c) : avChecked.delete(c.dataset.c); });
+  $('avAll').onchange = (e) => { list.forEach((d) => (e.target.checked ? avChecked.add(d.imei) : avChecked.delete(d.imei))); renderAdmVeh(); };
+  avUpdBtn();
+}
+function avUpdBtn() {
+  $('avSave').disabled = !avDirty.size;
+  $('avSave').textContent = avDirty.size ? `Enregistrer les modifications (${avDirty.size})` : 'Enregistrer les modifications';
+}
+function avBulk() {
+  const lot = $('avBulkLot').value.trim(), cat = $('avBulkCat').value.trim();
+  if (!avChecked.size || (!lot && !cat)) { showToast('Coche des véhicules et saisis un lot et/ou une catégorie.', 3000); return; }
+  avChecked.forEach((imei) => {
+    const d = devices.get(imei), ch = avDirty.get(imei) || {};
+    if (lot && d.lot !== lot) ch.lot = lot;
+    if (cat && d.categorie !== cat) ch.categorie = cat;
+    if (Object.keys(ch).length) avDirty.set(imei, ch);
+  });
+  renderAdmVeh();
+}
+async function avSave() {
+  $('avMsg').textContent = 'Enregistrement…';
+  let ok = 0;
+  for (const [imei, ch] of avDirty) {
+    const { data, error } = await sb.from('devices').update(ch).eq('imei', imei).select('imei');
+    if (error || !data.length) { $('avMsg').innerHTML = `<span style="color:#BD171E">Erreur sur ${esc(imei)} : ${esc(error ? error.message : 'modification refusée (es-tu administrateur ?)')}</span>`; return; }
+    Object.assign(devices.get(imei), ch); ok++;
+  }
+  avDirty.clear();
+  $('avMsg').textContent = `${ok} véhicule(s) enregistré(s).`;
+  renderTree(); renderList(); fillHistSelect(); renderAdmVeh();
+}
+function avAddForm() {
+  $('avMsg').innerHTML = `<div class="fform" style="display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end">
+    <label style="margin:0">IMEI (15 chiffres)<input id="avNewImei" maxlength="15" style="width:190px"></label>
+    <label style="margin:0">Nom / N° de parc<input id="avNewName" style="width:160px"></label>
+    <label style="margin:0">Catégorie<input id="avNewCat" list="dlCats" style="width:180px"></label>
+    <button class="btn" style="width:auto" id="avNewGo">Ajouter</button><button class="btn2" id="avNewX">Annuler</button></div>`;
+  $('avNewX').onclick = () => { $('avMsg').innerHTML = ''; };
+  $('avNewGo').onclick = async () => {
+    const imei = $('avNewImei').value.trim();
+    if (!/^\d{15}$/.test(imei)) { showToast('L\'IMEI doit contenir 15 chiffres.', 3000); return; }
+    const row = { imei, name: $('avNewName').value.trim() || null, categorie: $('avNewCat').value.trim() || null, lot: 'LOT 1' };
+    const { error } = await sb.from('devices').insert(row);
+    if (error) { showToast(error.message, 4000); return; }
+    upsertDevice(row); $('avMsg').innerHTML = 'Boîtier ajouté. Il apparaîtra sur la carte dès sa première connexion.';
+    renderTree(); fillHistSelect(); renderAdmVeh();
+  };
+}
+
+// ---------- Circuits : import de shapefile ----------
+let acFeatures = [], acMap = null, acExisting = new Map();
+const ringKm = (coords) => { let k = 0; for (let i = 1; i < coords.length; i++) k += dist({ lat: coords[i - 1][1], lng: coords[i - 1][0] }, { lat: coords[i][1], lng: coords[i][0] }); return k; };
+// Lecture d'un .zip (sans bibliothèque) : renvoie [{ name, buf }]
+async function unzipFiles(buf) {
+  const v = new DataView(buf), out = [];
+  let e = buf.byteLength - 22;
+  while (e >= 0 && v.getUint32(e, true) !== 0x06054b50) e--;
+  if (e < 0) throw new Error('fichier zip invalide');
+  let p = v.getUint32(e + 16, true);
+  const n = v.getUint16(e + 10, true);
+  for (let i = 0; i < n; i++) {
+    const method = v.getUint16(p + 10, true), csize = v.getUint32(p + 20, true);
+    const nl = v.getUint16(p + 28, true), xl = v.getUint16(p + 30, true), cl = v.getUint16(p + 32, true), lo = v.getUint32(p + 42, true);
+    const name = new TextDecoder().decode(new Uint8Array(buf, p + 46, nl));
+    p += 46 + nl + xl + cl;
+    const start = lo + 30 + v.getUint16(lo + 26, true) + v.getUint16(lo + 28, true);
+    const data = new Uint8Array(buf, start, csize);
+    let content;
+    if (method === 0) content = data.slice().buffer;
+    else if (method === 8) content = await new Response(new Blob([data]).stream().pipeThrough(new DecompressionStream('deflate-raw'))).arrayBuffer();
+    else continue;
+    if (!name.endsWith('/') && !/__MACOSX/.test(name)) out.push({ name: name.split('/').pop(), buf: content });
+  }
+  return out;
+}
+// Lambert Maroc (Merchich) : ajoute la transformation vers WGS84 si le .prj ne la contient pas
+function fixPrj(prj) {
+  if (!prj || /TOWGS84/i.test(prj) || !/merchich/i.test(prj)) return prj;
+  return prj.replace(/(DATUM\[\s*"[^"]*Merchich[^"]*"\s*,\s*SPHEROID\[[^\]]*\])/i, '$1,TOWGS84[31,146,47,0,0,0,0]');
+}
+async function acReadFiles(files) {
+  if (typeof shp === 'undefined') return showErr('La bibliothèque de lecture des shapefiles n\'est pas chargée (connexion internet ?).');
+  let list = [];
+  for (const f of [...files]) {
+    if (/\.zip$/i.test(f.name)) {
+      try { list = list.concat(await unzipFiles(await f.arrayBuffer())); } catch (e) { showErr('Zip illisible : ' + e.message); return; }
+    } else list.push({ name: f.name, buf: await f.arrayBuffer() });
+  }
+  // regroupe par nom de couche (un zip peut contenir plusieurs shapefiles)
+  const layers = {};
+  list.forEach(({ name, buf }) => { const m = name.match(/^(.*)\.(shp|dbf|prj|cpg)$/i); if (m) (layers[m[1]] = layers[m[1]] || {})[m[2].toLowerCase()] = buf; });
+  const names = Object.keys(layers).filter((k) => layers[k].shp && layers[k].dbf);
+  if (!names.length) { showToast('Il faut au minimum les fichiers .shp et .dbf (et le .prj), ou un .zip qui les contient.', 5000); return; }
+  const feats = [];
+  let projWarn = false;
+  try {
+    for (const k of names) {
+      const L0 = layers[k], dec = (b) => new TextDecoder().decode(b);
+      const prj = L0.prj ? fixPrj(dec(L0.prj)) : undefined;
+      if (prj && /PROJCS/i.test(prj) && /merchich/i.test(prj)) projWarn = true;
+      const gj = shp.combine([shp.parseShp(L0.shp, prj), shp.parseDbf(L0.dbf, L0.cpg ? dec(L0.cpg) : undefined)]);
+      feats.push(...(gj.features || []));
+    }
+  } catch (e) { showErr('Lecture du shapefile impossible : ' + e.message); return; }
+  if (projWarn) showToast('Projection Lambert Maroc (Merchich) détectée : conversion GPS appliquée automatiquement.', 5000);
+  const by = { shp: { name: names[0] + (names.length > 1 ? ` (+${names.length - 1})` : '') + '.shp' } };
+  const lines = feats.filter((f) => f.geometry && /LineString/.test(f.geometry.type));
+  if (!lines.length) { showToast(`Aucune ligne trouvée (${feats.length} entité(s) de type ${[...new Set(feats.map((f) => f.geometry && f.geometry.type))].join(', ')}).`, 6000); return; }
+  const c0 = lines[0].geometry.type === 'LineString' ? lines[0].geometry.coordinates[0] : lines[0].geometry.coordinates[0][0];
+  if (Math.abs(c0[0]) > 180 || Math.abs(c0[1]) > 90) { showErr('Coordonnées projetées sans fichier .prj : ajoute le .prj pour que la conversion en GPS soit automatique.'); return; }
+  acFeatures = lines.map((f) => ({ props: f.properties || {}, lines: f.geometry.type === 'LineString' ? [f.geometry.coordinates] : f.geometry.coordinates }));
+  acFeatures.forEach((f) => { f.km = f.lines.reduce((a, l) => a + ringKm(l), 0); });
+  acRenderPreview(by.shp.name);
+}
+function acRenderPreview(fname) {
+  const keys = [...new Set(acFeatures.flatMap((f) => Object.keys(f.props)))];
+  const pick = (re) => keys.find((k) => re.test(k)) || '';
+  const kCode = pick(/^(c_circuit|code_circuit|code|circuit|nom_court)$/i) || keys[0] || '';
+  const kName = pick(/^(nom|name|libelle|nom_circuit|designation)$/i);
+  const opt = (sel) => `<option value="">— aucun —</option>` + keys.map((k) => `<option${k === sel ? ' selected' : ''}>${esc(k)}</option>`).join('');
+  $('acPreview').innerHTML = `<div class="fform">
+    <b style="font-size:16px">Aperçu : ${esc(fname)} — ${acFeatures.length} circuit(s), ${acFeatures.reduce((a, f) => a + f.km, 0).toFixed(1)} km</b>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;margin:10px 0">
+      <label style="margin:0">Champ du code circuit<select id="acKCode">${opt(kCode)}</select></label>
+      <label style="margin:0">Champ du nom<select id="acKName">${opt(kName)}</select></label>
+      <label style="margin:0">Préfixe si code vide<input id="acPref" value="${esc(fname.replace(/\.(zip|shp)$/i, ''))}" style="width:180px"></label>
+    </div>
+    <div class="acgrid"><div id="acMap"></div><div class="gw" style="max-height:340px;overflow:auto"><table class="gtbl" id="acTbl"></table></div></div>
+    <div style="display:flex;gap:8px;margin-top:10px;align-items:center;flex-wrap:wrap">
+      <button class="btn" style="width:auto;padding:9px 18px" id="acGo">Importer</button><button class="btn2" id="acX">Annuler</button>
+      <span class="msg" id="acMsg">Un circuit dont le code existe déjà est mis à jour (tracé et attributs) ; son planning et ses résultats sont conservés.</span></div></div>`;
+  if (acMap) { acMap.remove(); acMap = null; }
+  acMap = L.map('acMap');
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(acMap);
+  const fg = L.featureGroup(acFeatures.map((f, i) => L.polyline(f.lines.map((l) => l.map(([x, y]) => [y, x])), { color: ['#2f6fbf', '#BD171E', '#16a34a', '#7c3aed', '#f59e0b'][i % 5], weight: 4 }))).addTo(acMap);
+  acMap.fitBounds(fg.getBounds(), { padding: [20, 20] });
+  const draw = () => {
+    const kc = $('acKCode').value, kn = $('acKName').value, pref = $('acPref').value || 'CIRCUIT';
+    const seen = {};
+    acFeatures.forEach((f, i) => {
+      let c = String((kc && f.props[kc]) ?? '').trim(); if (!c) c = `${pref}-${i + 1}`;
+      seen[c] = (seen[c] || 0) + 1; f.code = seen[c] > 1 ? `${c}-${seen[c]}` : c;
+      f.name = String((kn && f.props[kn]) ?? '').trim() || f.code;
+    });
+    $('acTbl').innerHTML = `<thead><tr><th>#</th><th>Code</th><th>Nom</th><th>Km</th><th>Action</th>${keys.slice(0, 6).map((k) => `<th>${esc(k)}</th>`).join('')}</tr></thead><tbody>
+      ${acFeatures.map((f, i) => `<tr><td>${i + 1}</td><td><b>${esc(f.code)}</b></td><td>${esc(f.name)}</td><td>${f.km.toFixed(2)}</td>
+        <td>${acExisting.has(f.code) ? '<span class="badge" style="background:#f59e0b">mise à jour</span>' : '<span class="badge" style="background:#16a34a">nouveau</span>'}</td>
+        ${keys.slice(0, 6).map((k) => `<td>${esc(f.props[k] ?? '')}</td>`).join('')}</tr>`).join('')}</tbody>`;
+  };
+  $('acKCode').onchange = $('acKName').onchange = $('acPref').oninput = draw;
+  draw();
+  $('acX').onclick = () => { if (acMap) { acMap.remove(); acMap = null; } $('acPreview').innerHTML = ''; };
+  $('acGo').onclick = acImport;
+}
+async function acImport() {
+  const g = (p, re) => { const k = Object.keys(p).find((x) => re.test(x)); return k && p[k] !== '' && p[k] !== null ? p[k] : null; };
+  const rows = acFeatures.map((f) => ({
+    code: f.code, name: f.name,
+    prefecture: g(f.props, /^prefecture$/i), frequence: g(f.props, /^frequence$/i), shift: g(f.props, /^shift$/i),
+    km_contrat: Number(g(f.props, /^km$/i)) || null, tableau_lm: g(f.props, /^tableau_lm$/i), attrs: f.props,
+    geom: 'SRID=4326;MULTILINESTRING(' + f.lines.map((l) => '(' + l.map(([x, y]) => `${(+x).toFixed(7)} ${(+y).toFixed(7)}`).join(',') + ')').join(',') + ')',
+  }));
+  $('acGo').disabled = true;
+  for (let i = 0; i < rows.length; i += 50) {
+    $('acMsg').textContent = `Import… ${Math.min(rows.length, i + 50)} / ${rows.length}`;
+    const { error } = await sb.from('circuits').upsert(rows.slice(i, i + 50), { onConflict: 'code' });
+    if (error) { $('acMsg').innerHTML = `<span style="color:#BD171E">${esc(error.message)}</span>`; $('acGo').disabled = false; return; }
+  }
+  if (acMap) { acMap.remove(); acMap = null; }
+  $('acPreview').innerHTML = '';
+  showToast(`${rows.length} circuit(s) importé(s).`, 4000);
+  circuits.clear(); await loadCircuits(); loadAdmCirc();
+}
+
+// ---------- Circuits existants ----------
+async function loadAdmCirc() {
+  const { data, error } = await sb.from('circuits_admin').select('*').order('code');
+  if (error) { $('acList').innerHTML = ''; return showErr(error.message + ' (as-tu exécuté admin_v10.sql ?)'); }
+  acExisting = new Map(data.map((c) => [c.code, c]));
+  $('acList').innerHTML = data.length ? `<div class="gw"><table class="gtbl atbl"><thead><tr><th>Code</th><th>Nom</th><th>Préfecture</th><th>Fréquence</th><th>Shift</th>
+      <th>Seuil (%)</th><th>Sens strict</th><th>Km</th><th>Planning</th><th>Résultats</th><th></th></tr></thead><tbody>
+    ${data.map((c) => `<tr data-id="${c.id}">
+      <td><input data-k="code" value="${esc(c.code)}" style="width:120px"></td><td><input data-k="name" value="${esc(c.name || '')}"></td>
+      <td><input data-k="prefecture" value="${esc(c.prefecture || '')}" style="width:110px"></td><td><input data-k="frequence" value="${esc(c.frequence || '')}" style="width:100px"></td>
+      <td><input data-k="shift" value="${esc(c.shift || '')}" style="width:90px"></td><td><input type="number" data-k="seuil" value="${c.seuil ?? 90}" style="width:70px"></td>
+      <td style="text-align:center"><input type="checkbox" data-k="sens_strict" ${c.sens_strict ? 'checked' : ''} style="width:auto"></td>
+      <td>${c.km}</td><td>${c.nb_planning}</td><td>${c.nb_resultats}</td>
+      <td style="white-space:nowrap"><button class="ibtn" data-v="${c.id}" title="Voir sur la carte">👁</button>
+        <button class="btn2" data-s="${c.id}" style="padding:4px 10px" hidden>Enregistrer</button>
+        <button class="ibtn" data-d="${c.id}" style="color:#BD171E" title="Supprimer">🗑</button></td></tr>`).join('')}</tbody></table></div>`
+    : '<p class="msg">Aucun circuit pour l\'instant : importe un shapefile ci-dessus.</p>';
+  $('acList').querySelectorAll('tr[data-id] input').forEach((i) => i.oninput = i.onchange = () => {
+    const tr = i.closest('tr'); tr.classList.add('dirty'); tr.querySelector('[data-s]').hidden = false;
+  });
+  $('acList').querySelectorAll('[data-s]').forEach((b) => b.onclick = async () => {
+    const tr = b.closest('tr'), ch = {};
+    tr.querySelectorAll('input[data-k]').forEach((i) => { ch[i.dataset.k] = i.type === 'checkbox' ? i.checked : i.type === 'number' ? Number(i.value) : (i.value.trim() || null); });
+    if (!ch.code) { showToast('Le code ne peut pas être vide.', 3000); return; }
+    const { data: d, error: e } = await sb.from('circuits').update(ch).eq('id', +b.dataset.s).select('id');
+    if (e || !d.length) { showToast(e ? e.message : 'Modification refusée (es-tu administrateur ?)', 5000); return; }
+    showToast('Circuit enregistré.', 2000);
+    circuits.clear(); await loadCircuits(); loadAdmCirc();
+  });
+  $('acList').querySelectorAll('[data-d]').forEach((b) => b.onclick = async () => {
+    const c = data.find((x) => x.id === +b.dataset.d);
+    if (b.dataset.sure !== '1') {
+      b.dataset.sure = '1'; b.textContent = c.nb_planning || c.nb_resultats ? `Supprimer aussi ${c.nb_planning} affectation(s) et ${c.nb_resultats} résultat(s) ?` : 'Confirmer ?';
+      setTimeout(() => { b.dataset.sure = ''; b.textContent = '🗑'; }, 5000); return;
+    }
+    const { error: e } = await sb.from('circuits').delete().eq('id', c.id);
+    if (e) { showToast(e.message, 5000); return; }
+    showToast(`Circuit ${c.code} supprimé.`, 3000);
+    circuits.clear(); await loadCircuits(); loadAdmCirc();
+  });
+  $('acList').querySelectorAll('[data-v]').forEach((b) => b.onclick = () => {
+    document.querySelector('.rb[data-tab="circ"]').click(); $('cCirc').value = b.dataset.v; showCircuit();
+  });
+}
+
 // ---------- Interface ----------
 let curTab = 'live';
 document.querySelectorAll('.rb[data-tab]').forEach((b) => b.onclick = () => {
@@ -2346,7 +2657,7 @@ document.querySelectorAll('.rb[data-tab]').forEach((b) => b.onclick = () => {
   if (tab !== 'hist') playStop();
   closeDatePickers();
   ['live', 'hist', 'circ', 'rep'].forEach((k) => { $('tab-' + k).hidden = k !== tab; });
-  const FULL = { rep: 'report', data: 'dataPanel', kpi: 'kpiPanel', fdr: 'fdrPanel' };
+  const FULL = { rep: 'report', data: 'dataPanel', kpi: 'kpiPanel', fdr: 'fdrPanel', adm: 'admPanel' };
   const full = !!FULL[tab];
   Object.entries(FULL).forEach(([k, id]) => { $(id).hidden = k !== tab; });
   // calques de la carte
@@ -2363,6 +2674,7 @@ document.querySelectorAll('.rb[data-tab]').forEach((b) => b.onclick = () => {
   if (tab === 'data' && !execGrid.rows.length) loadData();
   if (tab === 'kpi' && !kpiRows.length) loadKpi();
   if (tab === 'fdr') loadFdr();
+  if (tab === 'adm') admTab(document.querySelector('#admPanel .mtabs button.on').dataset.a);
   if (!full) setTimeout(() => map.invalidateSize(), 30);
   if (tab === 'circ' && !circLayer.getLayers().length) showCircuit();
 });
@@ -2433,6 +2745,17 @@ $('fArr').onchange = renderFdr;
 $('fAdd').onclick = () => fdrForm(null);
 $('fDup').onclick = fdrCopyYesterday;
 $('fImp').onclick = () => $('fFile').click();
+// Administration
+document.querySelectorAll('#admPanel .mtabs button').forEach((b) => b.onclick = () => admTab(b.dataset.a));
+$('avSearch').oninput = renderAdmVeh;
+$('avBulk').onclick = avBulk;
+$('avSave').onclick = avSave;
+$('avAdd').onclick = avAddForm;
+$('acPick').onclick = () => $('acFile').click();
+$('acFile').onchange = (e) => { const fl = [...e.target.files]; e.target.value = ''; if (fl.length) acReadFiles(fl); };
+['dragenter', 'dragover'].forEach((ev) => $('acDrop').addEventListener(ev, (e) => { e.preventDefault(); $('acDrop').classList.add('over'); }));
+['dragleave', 'drop'].forEach((ev) => $('acDrop').addEventListener(ev, (e) => { e.preventDefault(); $('acDrop').classList.remove('over'); }));
+$('acDrop').addEventListener('drop', (e) => { if (e.dataTransfer.files.length) acReadFiles(e.dataTransfer.files); });
 $('fFile').onchange = (e) => { const fl = e.target.files[0]; e.target.value = ''; if (fl) fdrImport(fl); };
 $('rCalc').onclick = recalcReport;
 $('rCsv').onclick = exportCsv;
@@ -2443,6 +2766,8 @@ document.querySelectorAll('.rep-tabs button').forEach((b) => b.onclick = () => {
   if (b.dataset.r === 'plan') loadPlanning();
 });
 
+window.addEventListener('beforeunload', (e) => { if (avDirty.size) { e.preventDefault(); e.returnValue = ''; } });
+
 // ---------- Démarrage (avec connexion) ----------
 let started = false, liveChannel = null;
 function startApp(session) {
@@ -2451,6 +2776,7 @@ function startApp(session) {
   if (started) return;
   started = true;
   loadFleet(true).then(loadLiveRates);
+  checkAdmin();
   loadCircuits();
   liveChannel = sb.channel('positions-live')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'positions' }, (payload) => {
