@@ -368,6 +368,11 @@
   .arrow svg { width: 16px; height: 16px; }
   .tarrow svg { width: 14px; height: 14px; }
   .leaflet-popup-content { font-size: 13px; line-height: 1.5; }
+  .kvpop { font-size: 12px; }
+  .kvpop td { padding: 3px 4px; vertical-align: top; }
+  .kvpop td:first-child { width: 44%; }
+  .kvpop .dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; vertical-align: -1px; }
+  .poplink { display: block; margin-top: 8px; font-weight: 600; }
   .leaflet-container img.leaflet-tile { mix-blend-mode: plus-lighter; }
   .leaflet-control-layers label { display: block; margin: 0; padding: 3px 4px; font-size: 13px; color: #111827; cursor: pointer; }
   .leaflet-control-layers label > span { display: flex; align-items: center; gap: 6px; }
@@ -900,14 +905,25 @@ function batteryHtml(p) {
   const col = b.pct > 50 ? '#16a34a' : b.pct > 20 ? '#f59e0b' : '#BD171E';
   return `<span style="white-space:nowrap" title="${b.est ? 'Estimé depuis la tension ' + b.v.toFixed(2) + ' V' : 'Niveau batterie (IO 113)'}">Batt. <b style="color:${col}">${b.est ? '≈' : ''}${b.pct} %</b></span>`;
 }
-function popup(d) {
-  const p = d.last, bat = batteryHtml(p);
-  return `<b>${esc(label(d))}</b>${d.plate && d.name ? ` — ${esc(d.plate)}` : ''}<br>
-    ${LABELS[status(p)]} · ${p.speed} km/h<br>
-    Contact : ${p.ignition === null || p.ignition === undefined ? '—' : p.ignition ? 'ON' : 'OFF'}${p.ext_voltage ? ` · Alim. ${p.ext_voltage.toFixed(1)} V` : ''}<br>
-    ${bat ? `Batterie boîtier : ${bat}<br>` : ''}<small>${fmtTime(p.ts)} · ${p.satellites ?? '—'} satellites</small><br>
-    <a href="#" onclick="openDetail('${d.imei}');return false">Ouvrir la fiche véhicule ›</a>`;
+// Informations du véhicule (fiche + bulle sur la carte)
+function infoRows(d) {
+  const p = d.last;
+  const rows = [['Nom / N° de parc', esc(label(d))], ['Immatriculation', esc(d.plate || '—')], ['IMEI', d.imei],
+    ['Lot', esc(lotOf(d))], ['Catégorie', esc(catOf(d))]];
+  if (p) rows.push(['Statut', `<span class="dot" style="background:${HEX[status(p)]}"></span> ${LABELS[status(p)]}`],
+    ['Dernière position', `${fmtTime(p.ts)}<br><small>${ago(p.ts)}</small>`], ['Adresse', fillAddr(p.lat, p.lng)],
+    ['Vitesse', `${p.speed} km/h`], ['Contact', p.ignition === null || p.ignition === undefined ? '—' : p.ignition ? 'ON' : 'OFF'],
+    ['Alimentation véhicule', p.ext_voltage ? `${p.ext_voltage.toFixed(1)} V` : '—'], ['Batterie boîtier', batteryHtml(p) || '—'],
+    ['Odomètre', p.odometer ? `${(p.odometer / 1000).toFixed(0)} km` : '—'], ['Satellites', p.satellites ?? '—'],
+    ['Coordonnées', `${(+p.lat).toFixed(6)}, ${(+p.lng).toFixed(6)}`]);
+  return rows;
 }
+function popup(d) {
+  return `<table class="kv kvpop">${infoRows(d).map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table>
+    <a href="#" class="poplink" onclick="openDetail('${d.imei}');return false">Ouvrir la fiche véhicule ›</a>`;
+}
+const POPOPT = { minWidth: 300, maxWidth: 340 };
+function refreshPopup(m, d) { if (m.isPopupOpen()) m.getPopup().setContent(popup(d)); }
 
 // ---------- Géocodage inverse (OpenStreetMap / Nominatim, 1 requête par seconde, avec cache) ----------
 const GEO = { q: [], busy: false, cache: {} };
@@ -1097,7 +1113,9 @@ function updatePos(p) {
   if (d.last && new Date(p.ts) < new Date(d.last.ts)) return;
   d.last = p;
   if (!d.marker) d.marker = L.marker([p.lat, p.lng], { icon: icon(p) }).addTo(fleetLayer);
-  d.marker.setLatLng([p.lat, p.lng]).setIcon(icon(p)).bindPopup(popup(d));
+  if (!d.marker.getPopup()) d.marker.bindPopup(() => popup(d), POPOPT);   // contenu calculé à l'ouverture
+  d.marker.setLatLng([p.lat, p.lng]).setIcon(icon(p));
+  refreshPopup(d.marker, d);
   if (detImei === p.imei) renderDetHead();
 }
 const lotOf = (d) => d.lot || 'LOT 1';
@@ -1257,7 +1275,7 @@ function circLine(d) {
   return r ? `▶ | ${esc(r.code)} en cours depuis ${fmtDT(r.start)}` : '';
 }
 function renderList() {
-  for (const d of devices.values()) if (d.marker && d.last) d.marker.setIcon(icon(d.last)).setPopupContent(popup(d));
+  for (const d of devices.values()) if (d.marker && d.last) { d.marker.setIcon(icon(d.last)); refreshPopup(d.marker, d); }
   if (!searchDone) return;
   const q = $('search').value.trim().toLowerCase();
   const sort = $('lvSort').value;
@@ -1469,15 +1487,7 @@ function detTab(t) {
   if (t === 'circ') renderDetCirc();
 }
 function renderDetInfo() {
-  const d = devices.get(detImei), p = d.last;
-  const rows = [['Nom / N° de parc', esc(label(d))], ['Immatriculation', esc(d.plate || '—')], ['IMEI', d.imei],
-    ['Lot', esc(lotOf(d))], ['Catégorie', esc(catOf(d))]];
-  if (p) rows.push(['Statut', `<span class="dot" style="background:${HEX[status(p)]}"></span> ${LABELS[status(p)]}`],
-    ['Dernière position', `${fmtTime(p.ts)}<br><small>${ago(p.ts)}</small>`], ['Adresse', fillAddr(p.lat, p.lng)],
-    ['Vitesse', `${p.speed} km/h`], ['Contact', p.ignition === null || p.ignition === undefined ? '—' : p.ignition ? 'ON' : 'OFF'],
-    ['Alimentation véhicule', p.ext_voltage ? `${p.ext_voltage.toFixed(1)} V` : '—'], ['Batterie boîtier', batteryHtml(p) || '—'],
-    ['Odomètre', p.odometer ? `${(p.odometer / 1000).toFixed(0)} km` : '—'], ['Satellites', p.satellites ?? '—'],
-    ['Coordonnées', `${(+p.lat).toFixed(6)}, ${(+p.lng).toFixed(6)}`]);
+  const d = devices.get(detImei), rows = infoRows(d);
   $('dInfo').innerHTML = `<div class="box"><table class="kv">${rows.map(([k, v]) => `<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table></div>
     <p class="msg">Lot, catégorie, nom et immatriculation se modifient dans Supabase → Table Editor → devices.</p>`;
 }
@@ -1571,7 +1581,7 @@ async function loadDetTrips() {
     }
   }
   if (group.length) map.fitBounds(L.featureGroup(group).getBounds(), { padding: [40, 40] });
-  if (d && d.last && !histMode) L.marker([d.last.lat, d.last.lng], { icon: icon(d.last) }).bindPopup(popup(d)).addTo(detLayer);
+  if (d && d.last && !histMode) L.marker([d.last.lat, d.last.lng], { icon: icon(d.last) }).bindPopup(() => popup(d), POPOPT).addTo(detLayer);
 
   const km = detTrips.reduce((a, t) => a + t.km, 0), sec = detTrips.reduce((a, t) => a + t.dur, 0);
   const periodTxt = esc(detPick.text());
@@ -3151,8 +3161,9 @@ async function bacRecalc() {
   showToast('Calcul des collectes de la journée…');
   const { data, error } = await sb.rpc('detecter_collectes_jour', { p_jour: $('bJour').value });
   if (error) return showErr(error.message);
-  showToast(`${data} collecte(s) détectée(s).`, 3000);
-  loadBacs(false);
+  await loadBacs(false);
+  const nb = bacsRows.filter((b) => Number(b.nb_collectes) > 0).length;
+  showToast(`${nb} bac(s) collecté(s) — ${data} arrêt(s) au total devant les bacs.`, 5000);
 }
 function bacExport() {
   const rows = bacsFiltered();
