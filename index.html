@@ -135,6 +135,59 @@
   .tl-ev .tm { color: var(--muted); }
   .tl-dur { padding: 6px 4px 6px 40px; font-size: 13px; color: #374151; }
 
+  /* sélecteur de dates */
+  .dfield { margin-top: 12px; }
+  .df-in { display: flex; align-items: center; gap: 8px; border: 1px solid #c9d2df; border-radius: 3px; padding: 9px 11px; cursor: pointer; background: #fff; min-height: 40px; }
+  .df-in:hover { border-color: var(--accent); }
+  .df-txt { flex: 1; font-size: 13.5px; }
+  .df-txt .ph { color: #8a94a3; }
+  .df-in svg { width: 20px; height: 20px; color: var(--accent); flex-shrink: 0; }
+  .df-x { border: 0; background: none; color: var(--muted); font-size: 18px; cursor: pointer; line-height: 1; padding: 0 2px; }
+  .dp { position: fixed; z-index: 3000; display: flex; background: #fff; border-radius: 4px; box-shadow: 0 8px 28px rgba(0,0,0,.25); font-size: 13px; max-width: calc(100vw - 16px); }
+  .dp-pre { width: 150px; border-right: 1px solid var(--border); padding: 8px 0; }
+  .dp-pre a { display: block; padding: 6px 12px; color: #4b5563; cursor: pointer; text-decoration: none; }
+  .dp-pre a:hover { background: var(--bg2); color: var(--accent); }
+  .dp-main { padding: 10px 12px; width: 440px; max-width: calc(100vw - 180px); }
+  .dp-nav { display: flex; align-items: center; justify-content: center; gap: 6px; margin-bottom: 6px; }
+  .dp-nav b { min-width: 110px; text-align: center; font-weight: 600; }
+  .dp-nav button { border: 0; background: none; cursor: pointer; color: #4b5563; font-size: 16px; padding: 2px 8px; }
+  .dp-cal { width: 100%; border-collapse: collapse; text-align: center; }
+  .dp-cal th { font-weight: 400; color: #6b7280; padding: 4px 0; }
+  .dp-cal td { padding: 2px; }
+  .dp-cal td.wk { color: #b0b7c3; font-size: 12px; }
+  .dp-cal td span { display: inline-block; width: 30px; height: 28px; line-height: 28px; border-radius: 3px; cursor: pointer; }
+  .dp-cal td span:hover { background: #e7effa; }
+  .dp-cal td span.out { color: #c0c6cf; }
+  .dp-cal td span.today { color: var(--accent); font-weight: 700; }
+  .dp-cal td span.in { background: #dbe8f8; }
+  .dp-cal td span.on { background: var(--accent); color: #fff; }
+  .dp-sec { margin-top: 10px; }
+  .dp-sec > b { color: #4b5563; font-weight: 600; }
+  .dp-box { border: 1px solid var(--border); padding: 8px 10px; margin-top: 6px; }
+  .dp-box label { margin: 0 14px 0 0; display: inline-flex; align-items: center; gap: 6px; color: var(--text); }
+  .dp-box .row2 label { display: block; margin: 0; color: #4b5563; }
+  .dp-box input[type=radio], .dp-box input[type=checkbox] { width: auto; margin: 0; }
+  .dp-foot { display: flex; justify-content: flex-end; gap: 22px; padding-top: 10px; }
+  .dp-foot button { border: 0; background: none; color: #4b5563; cursor: pointer; font-size: 14px; }
+  .dp-foot button.ok { color: var(--accent); font-weight: 700; }
+  .dp-err { color: var(--red); font-size: 12px; margin-top: 6px; min-height: 14px; }
+  @media (max-width: 760px) { .dp { flex-direction: column; left: 8px !important; right: 8px; } .dp-pre { width: auto; display: flex; flex-wrap: wrap; border-right: 0; border-bottom: 1px solid var(--border); } .dp-main { width: auto; max-width: none; } }
+  .lv-mode { margin: 0 16px 8px; padding: 6px 10px; background: #fff7e6; border-left: 3px solid #f59e0b; font-size: 12.5px; }
+  .ccard { padding: 10px 14px; border-bottom: 1px solid var(--border); cursor: pointer; }
+  .ccard:hover { background: #eef3fa; }
+  .ccard .top { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+  .ccard .top b { font-size: 14px; }
+  .ccard .bar { height: 7px; margin: 6px 0 2px; }
+  .day-h { background: var(--bg2); padding: 6px 14px; font-weight: 700; font-size: 13px; color: var(--accent-dark); border-bottom: 1px solid var(--border); }
+  .tl-day { position: relative; z-index: 1; font-weight: 700; color: var(--accent-dark); margin: 12px 0 4px 34px; text-transform: capitalize; }
+  /* lecture du trajet */
+  .player { display: flex; align-items: center; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+  .player .pbtn { width: 40px; height: 40px; border-radius: 50%; border: 0; background: var(--accent); color: #fff; cursor: pointer; font-size: 16px; display: flex; align-items: center; justify-content: center; }
+  .player .pbtn.sec { background: var(--bg2); color: var(--accent); width: 34px; height: 34px; font-size: 14px; }
+  .player select { width: auto; padding: 5px 8px; }
+  .player label { margin: 0; display: inline-flex; align-items: center; gap: 5px; color: var(--text); font-size: 12.5px; }
+  .player label input { width: auto; margin: 0; }
+
   /* ---- Zone principale ---- */
   #main { flex: 1; min-width: 0; display: flex; flex-direction: column; position: relative; }
   #mapwrap { flex: 1; min-height: 0; position: relative; }
@@ -269,6 +322,7 @@
       <div class="utabs"><button class="on" data-u="veh">Véhicule</button><button data-u="circ">Circuit</button></div>
       <div id="uVeh" class="tree"></div>
       <div id="uCirc" class="tree" hidden></div>
+      <div class="dfield" id="lvDate"></div>
       <div class="lv-actions"><button class="gbtn" id="lvGo">Recherche temps réel</button></div>
     </div>
 
@@ -279,8 +333,10 @@
         <button class="ibtn" id="lvRefresh" title="Actualiser"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 12a8 8 0 1 1-2.3-5.7"/><path d="M20 4v5h-5"/></svg></button>
       </div>
       <div class="lv-meta"><b id="lvCount"></b><small id="lvAt"></small></div>
+      <div class="lv-mode" id="lvMode" hidden></div>
       <div class="chips" id="lvChips"></div>
       <div id="lvGroups"></div>
+      <div id="lvCircRes" hidden></div>
     </div>
 
     <div id="lvDet" hidden style="display:flex;flex-direction:column;flex:1;min-height:0">
@@ -293,8 +349,7 @@
       <div class="det-body" id="dInfo" hidden></div>
       <div class="det-body" id="dHist">
         <div class="box">
-          <label>Date<input type="date" id="dDate"></label>
-          <div class="row2"><label>De<input type="time" id="dFrom" value="00:00"></label><label>À<input type="time" id="dTo" value="23:59"></label></div>
+          <div class="dfield" id="dDateField" style="margin:0 0 10px"></div>
           <button class="btn" id="dGo">Afficher les trajets</button>
         </div>
         <div id="dTimeline"></div>
@@ -314,6 +369,13 @@
     <button class="btn" id="hGo">Afficher le trajet</button>
     <div id="hStats"></div>
     <input type="range" id="hSlider" min="0" value="0" hidden>
+    <div class="player" id="hPlayer" hidden>
+      <button class="pbtn sec" id="hRestart" title="Revenir au début">⏮</button>
+      <button class="pbtn" id="hPlay" title="Lecture / pause">▶</button>
+      <select id="hSpeed" title="Vitesse de lecture"><option value="10">×10</option><option value="30">×30</option><option value="60" selected>×60</option><option value="120">×120</option><option value="300">×300</option></select>
+      <label><input type="checkbox" id="hFollow" checked> Suivre</label>
+      <label><input type="checkbox" id="hSkip" checked> Passer les arrêts</label>
+    </div>
     <div id="hInfo"></div>
   </div></section>
 
@@ -480,6 +542,23 @@ function bearing(a, b) {
   const x = Math.cos(a.lat * r) * Math.sin(b.lat * r) - Math.sin(a.lat * r) * Math.cos(b.lat * r) * Math.cos((b.lng - a.lng) * r);
   return (Math.atan2(y, x) / r + 360) % 360;
 }
+// Vitesse max plausible : ignore les pics GPS incohérents avec le déplacement réel entre les points
+function vmaxOf(pts) {
+  let v = 0;
+  for (let i = 0; i < pts.length; i++) {
+    const s = pts[i].speed || 0;
+    if (s <= v) continue;
+    let d = 0;
+    for (const j of [i - 1, i + 1]) {
+      const q = pts[j];
+      if (!q) continue;
+      const h = Math.abs(T(pts[i]) - T(q)) / 3600000;
+      if (h > 0 && h < 0.1) d = Math.max(d, dist(pts[i], q) / h);
+    }
+    if (s <= d * 1.5 + 20) v = s;
+  }
+  return Math.round(v);
+}
 function durTxt(min) {
   const h = Math.floor(min / 60), m = Math.round(min % 60);
   return h ? `${h} h ${pad2(m)}` : `${m} min`;
@@ -573,6 +652,136 @@ function fillAddr(lat, lng, onDone) {
     if (onDone) onDone(txt);
   });
   return `<span data-g="${k}">${GEO.cache[k] ? esc(GEO.cache[k]) : '…'}</span>`;
+}
+
+// ---------- Sélecteur de dates (façon GeoRed) ----------
+const MOIS = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin', 'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+const CAL_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/><rect x="13" y="13" width="4" height="4" fill="currentColor"/></svg>';
+const dIso = (d) => isoDay(d);
+const fDay = (iso) => `${iso.slice(8, 10)}/${iso.slice(5, 7)}/${iso.slice(0, 4)}`;
+function isoWeek(d) {
+  const t = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  const day = t.getUTCDay() || 7; t.setUTCDate(t.getUTCDate() + 4 - day);
+  return Math.ceil(((t - new Date(Date.UTC(t.getUTCFullYear(), 0, 1))) / 86400000 + 1) / 7);
+}
+function daysBetween(a, b) { // ISO inclusifs
+  const out = []; const d = new Date(a + 'T12:00'); const e = new Date(b + 'T12:00');
+  while (d <= e && out.length < 400) { out.push(dIso(d)); d.setDate(d.getDate() + 1); }
+  return out;
+}
+class DatePick {
+  constructor(el, opts = {}) {
+    this.el = el; this.ph = opts.placeholder || 'Choisir une date';
+    this.allowEmpty = opts.allowEmpty !== false; this.onChange = opts.onChange || (() => {});
+    this.val = opts.value || null; this.render();
+  }
+  static day(iso, deb = '00:00', fin = '23:59') { return { mode: 'periode', days: [iso], deb, fin, daily: false }; }
+  render() {
+    this.el.innerHTML = `<div class="df-in"><span class="df-txt">${this.val ? esc(this.text()) : `<span class="ph">${esc(this.ph)}</span>`}</span>
+      ${this.val && this.allowEmpty ? '<button class="df-x" title="Effacer la date (revenir au temps réel)">×</button>' : ''}${CAL_SVG}</div>`;
+    this.el.querySelector('.df-in').onclick = (e) => {
+      if (e.target.classList.contains('df-x')) { e.stopPropagation(); this.set(null); return; }
+      this.open();
+    };
+  }
+  set(v) { this.val = v; this.render(); this.onChange(v); }
+  text() {
+    const v = this.val, d = v.days;
+    if (v.mode === 'periode' && !v.daily) return d.length === 1 ? `${fDay(d[0])}  ${v.deb} → ${v.fin}` : `${fDay(d[0])} ${v.deb} → ${fDay(d[d.length - 1])} ${v.fin}`;
+    if (d.length === 1) return `${fDay(d[0])}  ${v.deb} → ${v.fin}`;
+    return `${d.length} jours (${fDay(d[0])} … ${fDay(d[d.length - 1])}) · ${v.deb}–${v.fin} chaque jour`;
+  }
+  intervals() {
+    const v = this.val; if (!v) return null;
+    const mk = (day, hm, end) => { const x = new Date(`${day}T${hm}:${end ? '59' : '00'}`); return x; };
+    if (v.mode === 'periode' && !v.daily) return [[mk(v.days[0], v.deb), mk(v.days[v.days.length - 1], v.fin, true)]];
+    return v.days.map((day) => { const a = mk(day, v.deb), b = mk(day, v.fin, true); if (b <= a) b.setDate(b.getDate() + 1); return [a, b]; });
+  }
+  open() {
+    closeDatePickers();
+    const v = this.val || DatePick.day(dIso(new Date()));
+    const st = { mode: v.mode, days: new Set(v.days), deb: v.deb, fin: v.fin, daily: v.daily, anchor: null,
+      view: new Date(v.days[v.days.length - 1] + 'T12:00') };
+    const pop = document.createElement('div');
+    pop.className = 'dp';
+    document.body.appendChild(pop);
+    const today = dIso(new Date());
+    const draw = () => {
+      const y = st.view.getFullYear(), m = st.view.getMonth();
+      const first = new Date(y, m, 1, 12); const start = new Date(first); start.setDate(1 - ((first.getDay() + 6) % 7));
+      let rows = '';
+      for (let w = 0; w < 6; w++) {
+        const wd = new Date(start); wd.setDate(start.getDate() + w * 7);
+        rows += `<tr><td class="wk">${isoWeek(wd)}</td>`;
+        for (let k = 0; k < 7; k++) {
+          const d = new Date(start); d.setDate(start.getDate() + w * 7 + k);
+          const iso = dIso(d);
+          const cls = [d.getMonth() !== m ? 'out' : '', iso === today ? 'today' : '', st.days.has(iso) ? 'on' : ''].join(' ');
+          rows += `<td><span class="${cls}" data-d="${iso}">${d.getDate()}</span></td>`;
+        }
+        rows += '</tr>';
+      }
+      pop.innerHTML = `<div class="dp-pre"><a data-p="today">Aujourd'hui</a><a data-p="yest">Hier</a><a data-p="7">7 derniers jours</a><a data-p="month">Mois en cours</a><a data-p="last">Mois dernier</a></div>
+        <div class="dp-main">
+          <div class="dp-nav"><button data-n="-12">«</button><button data-n="-1">‹</button><b>${MOIS[m]} ${y}</b><button data-n="1">›</button><button data-n="12">»</button></div>
+          <table class="dp-cal"><thead><tr><th></th><th>lu</th><th>ma</th><th>me</th><th>je</th><th>ve</th><th>sa</th><th>di</th></tr></thead><tbody>${rows}</tbody></table>
+          <div class="dp-sec"><b>Mode de sélection</b><div class="dp-box">
+            <label><input type="radio" name="dpm" value="jour" ${st.mode === 'jour' ? 'checked' : ''}> Chaque jour</label>
+            <label><input type="radio" name="dpm" value="periode" ${st.mode === 'periode' ? 'checked' : ''}> Période</label></div></div>
+          <div class="dp-sec"><b>Plage horaire</b><div class="dp-box">
+            <div class="row2"><label>Début<input type="time" id="dpDeb" value="${st.deb}"></label><label>Fin<input type="time" id="dpFin" value="${st.fin}"></label></div>
+            <label style="margin-top:8px"><input type="checkbox" id="dpDaily" ${st.daily || st.mode === 'jour' ? 'checked' : ''} ${st.mode === 'jour' ? 'disabled' : ''}> Appliquer la plage horaire chaque jour</label></div></div>
+          <div class="dp-err" id="dpErr"></div>
+          <div class="dp-foot"><button id="dpCancel">Annuler</button><button class="ok" id="dpOk">Valider</button></div>
+        </div>`;
+      pop.querySelectorAll('[data-n]').forEach((b) => b.onclick = () => { st.view.setMonth(st.view.getMonth() + +b.dataset.n); draw(); });
+      pop.querySelectorAll('[data-d]').forEach((c) => c.onclick = () => {
+        const iso = c.dataset.d;
+        if (st.mode === 'jour') { st.days.has(iso) ? st.days.delete(iso) : st.days.add(iso); }
+        else if (!st.anchor) { st.anchor = iso; st.days = new Set([iso]); }
+        else { const [a, b] = [st.anchor, iso].sort(); st.days = new Set(daysBetween(a, b)); st.anchor = null; }
+        draw();
+      });
+      pop.querySelectorAll('[data-p]').forEach((a) => a.onclick = () => {
+        const t = new Date(); let from, to = dIso(t);
+        if (a.dataset.p === 'today') from = to;
+        if (a.dataset.p === 'yest') { t.setDate(t.getDate() - 1); from = to = dIso(t); }
+        if (a.dataset.p === '7') { const x = new Date(); x.setDate(x.getDate() - 6); from = dIso(x); }
+        if (a.dataset.p === 'month') from = to.slice(0, 8) + '01';
+        if (a.dataset.p === 'last') { const x = new Date(t.getFullYear(), t.getMonth(), 0, 12); to = dIso(x); from = to.slice(0, 8) + '01'; }
+        st.mode = 'periode'; st.anchor = null; st.days = new Set(daysBetween(from, to)); st.view = new Date(to + 'T12:00');
+        draw();
+      });
+      pop.querySelectorAll('input[name=dpm]').forEach((r) => r.onchange = () => { st.mode = r.value; st.anchor = null; draw(); });
+      pop.querySelector('#dpDeb').onchange = (e) => { st.deb = e.target.value || '00:00'; };
+      pop.querySelector('#dpFin').onchange = (e) => { st.fin = e.target.value || '23:59'; };
+      pop.querySelector('#dpDaily').onchange = (e) => { st.daily = e.target.checked; };
+      pop.querySelector('#dpCancel').onclick = closeDatePickers;
+      pop.querySelector('#dpOk').onclick = () => {
+        const days = [...st.days].sort();
+        if (!days.length) { pop.querySelector('#dpErr').textContent = 'Choisis au moins un jour.'; return; }
+        if (days.length > 31) { pop.querySelector('#dpErr').textContent = '31 jours maximum.'; return; }
+        st.deb = pop.querySelector('#dpDeb').value || '00:00'; st.fin = pop.querySelector('#dpFin').value || '23:59';
+        closeDatePickers();
+        this.set({ mode: st.mode, days, deb: st.deb, fin: st.fin, daily: st.mode === 'jour' || st.daily });
+      };
+      // position
+      const r = this.el.getBoundingClientRect();
+      const w = pop.offsetWidth, h = pop.offsetHeight;
+      let left = Math.min(r.left, window.innerWidth - w - 8), top = r.bottom + 4;
+      if (top + h > window.innerHeight - 8) top = Math.max(8, r.top - h - 4);
+      pop.style.left = Math.max(8, left) + 'px'; pop.style.top = top + 'px';
+    };
+    draw();
+    setTimeout(() => { document.addEventListener('mousedown', DatePick.outside); document.addEventListener('keydown', DatePick.esc); }, 0);
+  }
+  static outside(e) { if (!e.target.closest('.dp')) closeDatePickers(); }
+  static esc(e) { if (e.key === 'Escape') closeDatePickers(); }
+}
+function closeDatePickers() {
+  document.querySelectorAll('.dp').forEach((p) => p.remove());
+  document.removeEventListener('mousedown', DatePick.outside);
+  document.removeEventListener('keydown', DatePick.esc);
 }
 
 // ---------- Flotte ----------
@@ -736,6 +945,8 @@ async function loadLiveRates() {
 // ---------- Résultats « Recherche temps réel » ----------
 const openGroups = new Set();
 let selImei = null;
+let histMode = false;             // true = recherche historique (date choisie)
+const actMap = new Map();         // imei -> activité sur la période
 const RATE_SVG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 7h12l-3-3M20 17H8l3 3"/></svg>';
 function cardRing(d) {
   const s = status(d.last);
@@ -753,17 +964,20 @@ function renderList() {
   const all = [...devices.values()].filter(inSelection);
   const list = all.filter((d) => !q || `${label(d)} ${d.plate || ''} ${d.imei}`.toLowerCase().includes(q));
   const rank = { move: 0, idle: 1, stop: 2, off: 3 };
+  const lastT = (d) => (histMode ? (actMap.get(d.imei) ? new Date(actMap.get(d.imei).dernier).getTime() : 0) : (d.last ? T(d.last) : 0));
   list.sort((a, b) => sort === 'status' ? rank[status(a.last)] - rank[status(b.last)] || label(a).localeCompare(label(b), 'fr', { numeric: true })
-    : sort === 'recent' ? (b.last ? T(b.last) : 0) - (a.last ? T(a.last) : 0)
+    : sort === 'recent' ? lastT(b) - lastT(a)
     : label(a).localeCompare(label(b), 'fr', { numeric: true }));
   // carte : uniquement les véhicules sélectionnés
-  for (const d of devices.values()) if (d.marker) { const show = list.includes(d); show ? fleetLayer.addLayer(d.marker) : fleetLayer.removeLayer(d.marker); }
+  for (const d of devices.values()) if (d.marker) { const show = list.includes(d) && !histMode; show ? fleetLayer.addLayer(d.marker) : fleetLayer.removeLayer(d.marker); }
 
   const counts = { move: 0, idle: 0, stop: 0, off: 0 };
   list.forEach((d) => counts[status(d.last)]++);
   $('lvCount').textContent = `${list.length}/${devices.size}`;
   $('lvAt').textContent = `à ${fmtDT(Date.now())}`;
-  $('lvChips').innerHTML = Object.keys(counts).map((k) => `<span><span class="dot" style="background:${HEX[k]}"></span>${LABELS[k]} : ${counts[k]}</span>`).join('');
+  $('lvChips').innerHTML = histMode
+    ? `<span><span class="dot" style="background:var(--move)"></span>Actifs sur la période : ${list.filter((d) => actMap.has(d.imei)).length}</span><span><span class="dot" style="background:#9ca3af"></span>Sans activité : ${list.filter((d) => !actMap.has(d.imei)).length}</span>`
+    : Object.keys(counts).map((k) => `<span><span class="dot" style="background:${HEX[k]}"></span>${LABELS[k]} : ${counts[k]}</span>`).join('');
 
   const groups = {};
   list.forEach((d) => { const g = `${lotOf(d)} > ${catOf(d)}`; (groups[g] = groups[g] || []).push(d); });
@@ -773,6 +987,17 @@ function renderList() {
     const open = openGroups.has(g);
     return `<div class="grp-h" data-g="${esc(g)}"><span>${esc(g)}</span><span><span class="n">${groups[g].length}</span>${open ? '︿' : '﹀'}</span></div>` +
       (open ? groups[g].map((d) => {
+        if (histMode) {
+          const a = actMap.get(d.imei);
+          const card = `<div class="card${selImei === d.imei ? ' sel' : ''}" data-i="${d.imei}">
+            <div class="ring" style="border-color:${a ? '#16a34a' : '#9ca3af'}">${TRUCK_SVG}</div>
+            <div class="info"><div class="when">${a ? `${fmtDT(a.premier)} → ${fmtDT(a.dernier)}` : 'Aucune donnée sur la période'}</div>
+            <div class="nm">${esc(label(d))}</div>${a ? `<div class="circ">${Number(a.km).toFixed(2)} km parcourus · ${a.nb_points} points</div>` : ''}</div>
+            ${a ? `<div class="pct" style="color:var(--accent-dark)">${Number(a.km).toFixed(1)} km</div>` : ''}</div>`;
+          const acts = selImei === d.imei ? `<div class="card-acts">
+            <button class="ibtn" data-a="det" data-i="${d.imei}" title="Trajets sur la période"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/><path d="M12 8v4l3 2"/></svg></button></div>` : '';
+          return card + acts;
+        }
         const r = liveRates.get(d.imei);
         const stale = d.last && (Date.now() - T(d.last)) / 3600000 > ALERT_HOURS;
         const card = `<div class="card${selImei === d.imei ? ' sel' : ''}" data-i="${d.imei}">${cardRing(d)}
@@ -798,7 +1023,7 @@ function renderList() {
     c.onclick = () => {
       const d = devices.get(c.dataset.i);
       selImei = selImei === d.imei ? null : d.imei;
-      if (d.marker && selImei) { map.flyTo(d.marker.getLatLng(), Math.max(map.getZoom(), 15)); d.marker.openPopup(); }
+      if (d.marker && selImei && !histMode) { map.flyTo(d.marker.getLatLng(), Math.max(map.getZoom(), 15)); d.marker.openPopup(); }
       renderList();
     };
     c.ondblclick = () => openDetail(c.dataset.i);
@@ -811,15 +1036,102 @@ function renderList() {
     if (b.dataset.a === 'circ') openDetail(d.imei, 'circ');
   });
 }
-function runSearch() {
+async function runSearch() {
   searchDone = true;
+  closeDatePickers();
   $('lvForm').hidden = true;
   $('lvRes').hidden = false;
+  const circMode = !$('uCirc').hidden;
+  $('lvGroups').hidden = circMode; $('lvCircRes').hidden = !circMode;
+  $('lvChips').hidden = circMode;
+  histMode = !!lvPick.val;
+  $('lvMode').hidden = !histMode;
+  if (histMode) $('lvMode').innerHTML = `<b>Historique</b> · ${esc(lvPick.text())}`;
+  if (circMode) return runCircSearch();
   openGroups.clear();
+  if (histMode) {
+    $('lvGroups').innerHTML = '<p class="msg pad">Calcul de l\'activité de la flotte…</p>';
+    const iv = lvPick.intervals().map(([a, b]) => [a.toISOString(), b.toISOString()]);
+    const { data, error } = await sb.rpc('activite_vehicules', { p_intervals: iv });
+    actMap.clear();
+    if (error) showErr('Recherche historique : ' + error.message + ' (as-tu exécuté historique_v8.sql ?)');
+    else data.forEach((a) => actMap.set(a.imei, a));
+  }
   renderList();
-  const pts = [...devices.values()].filter((d) => d.last && inSelection(d)).map((d) => [d.last.lat, d.last.lng]);
-  if (pts.length > 1) map.fitBounds(pts, { padding: [40, 40], maxZoom: 16 });
-  else if (pts.length === 1) map.setView(pts[0], 15);
+  if (!histMode) {
+    const pts = [...devices.values()].filter((d) => d.last && inSelection(d)).map((d) => [d.last.lat, d.last.lng]);
+    if (pts.length > 1) map.fitBounds(pts, { padding: [40, 40], maxZoom: 16 });
+    else if (pts.length === 1) map.setView(pts[0], 15);
+  }
+}
+
+// Recherche par circuit : temps réel = planning du jour ; historique = résultats calculés
+async function runCircSearch() {
+  const box = $('lvCircRes');
+  const ids = circChecked.size ? new Set([...circChecked]) : null;
+  box.innerHTML = '<p class="msg pad">Chargement…</p>';
+  $('lvCount').textContent = '';
+  $('lvAt').textContent = `à ${fmtDT(Date.now())}`;
+  const card = (o) => {
+    const t = o.taux, col = t === null || t === undefined ? '#9ca3af' : tauxCol(t, o.seuil);
+    const badge = { encours: ['En cours', '#2f6fbf'], attente: ['En attente de démarrage', '#9ca3af'], termine: ['Terminé', '#16a34a'],
+      nonexec: ['Non exécuté', '#BD171E'], conforme: ['Conforme', '#16a34a'], nonconf: ['Non conforme', '#BD171E'] }[o.st];
+    return `<div class="ccard" data-j='${esc(JSON.stringify(o.open))}'>
+      <div class="top"><b>${esc(o.code)}</b><span class="badge" style="background:${badge[1]}">${badge[0]}</span></div>
+      <div class="msg" style="margin:2px 0">${esc(o.veh)} · ${esc(o.shift || '')} ${o.plage}</div>
+      ${t === null || t === undefined ? '' : `<div class="bar"><div style="width:${t}%;background:${col}"></div></div><b style="color:${col}">${t} %</b> <small class="msg">${o.extra || ''}</small>`}
+    </div>`;
+  };
+  let html = '', n = 0;
+  if (!lvPick.val) {
+    const { data, error } = await sb.from('planning_list').select('*').eq('actif', true);
+    if (error) { box.innerHTML = ''; return showErr(error.message); }
+    const now = new Date(), items = [];
+    for (const p of data) {
+      if (ids && !ids.has(String(p.circuit_id))) continue;
+      for (const off of [-1, 0]) {
+        const d = new Date(now); d.setDate(d.getDate() + off);
+        if (!p[DOW[d.getDay()]]) continue;
+        const day = isoDay(d);
+        const s = new Date(`${day}T${p.heure_debut.slice(0, 8)}`), e = new Date(`${day}T${p.heure_fin.slice(0, 8)}`);
+        if (e <= s) e.setDate(e.getDate() + 1);
+        if (off === -1 && e < now) continue;                 // shift de la veille déjà fini
+        if (off === 0 && isoDay(s) !== isoDay(now)) continue;
+        items.push({ p, s, e, day });
+      }
+    }
+    await Promise.all(items.map(async (it) => {
+      if (now < it.s) { it.st = 'attente'; it.taux = null; return; }
+      const { data: r } = await sb.rpc('circuit_realisation', { p_circuit: it.p.circuit_id, p_imei: it.p.imei,
+        p_from: it.s.toISOString(), p_to: (now < it.e ? now : it.e).toISOString(), p_tol: it.p.tolerance || 20, p_sens: false, p_geojson: false });
+      it.taux = r ? Number(r.taux || 0) : 0;
+      it.st = now <= it.e ? 'encours' : (it.taux > 0 ? 'termine' : 'nonexec');
+    }));
+    items.sort((a, b) => a.p.circuit_code.localeCompare(b.p.circuit_code, 'fr', { numeric: true }));
+    n = items.length;
+    html = `<div class="day-h">Aujourd'hui</div>` + items.map((it) => card({ code: it.p.circuit_code, st: it.st, taux: it.taux, seuil: it.p.seuil,
+      veh: it.p.vehicule || it.p.plate || it.p.imei, shift: it.p.shift, plage: `${it.p.heure_debut.slice(0, 5)}–${it.p.heure_fin.slice(0, 5)}`,
+      extra: it.st === 'encours' ? `à ${fmtHour(now)}` : '',
+      open: { circuit_id: it.p.circuit_id, imei: it.p.imei, jour: it.day, heure_debut: it.p.heure_debut, heure_fin: it.p.heure_fin, tolerance: it.p.tolerance, sens_strict: false } })).join('');
+  } else {
+    const { data, error } = await sb.from('realisations_list').select('*').in('jour', lvPick.val.days).order('jour', { ascending: false }).order('circuit_code');
+    if (error) { box.innerHTML = ''; return showErr(error.message); }
+    const rows = data.filter((r) => !ids || ids.has(String(r.circuit_id)));
+    n = rows.length;
+    let lastDay = '';
+    html = rows.map((r) => {
+      const h = r.jour !== lastDay ? `<div class="day-h">${new Date(r.jour + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: '2-digit', year: 'numeric' })}</div>` : '';
+      lastDay = r.jour;
+      return h + card({ code: r.circuit_code, st: Number(r.taux) === 0 ? 'nonexec' : r.conforme ? 'conforme' : 'nonconf', taux: Number(r.taux || 0), seuil: r.seuil,
+        veh: r.vehicule || r.plate || r.imei, shift: r.shift, plage: `${(r.heure_debut || '').slice(0, 5)}–${(r.heure_fin || '').slice(0, 5)}`,
+        extra: `${(r.realise_m / 1000).toFixed(2)} / ${(r.longueur_m / 1000).toFixed(2)} km`,
+        open: { circuit_id: r.circuit_id, imei: r.imei, jour: r.jour, heure_debut: r.heure_debut, heure_fin: r.heure_fin, tolerance: r.tolerance, sens_strict: r.sens_strict } });
+    }).join('');
+    if (!rows.length) html = '<p class="msg pad">Aucun résultat calculé sur ces dates. Vérifie le planning, ou lance « Recalculer la période » dans Rapports.</p>';
+  }
+  $('lvCount').textContent = `${n} circuit(s)`;
+  box.innerHTML = html || '<p class="msg pad">Aucun circuit planifié aujourd\'hui.</p>';
+  box.querySelectorAll('.ccard').forEach((c) => c.onclick = () => openInCircuits(JSON.parse(c.dataset.j)));
 }
 
 // ---------- Fiche véhicule ----------
@@ -837,15 +1149,15 @@ function openDetail(imei, tab = 'hist') {
   $('lvForm').hidden = true; $('lvRes').hidden = true; $('lvDet').hidden = false;
   if (document.querySelector('.rb.on').dataset.tab !== 'live') document.querySelector('.rb[data-tab="live"]').click();
   renderDetHead();
-  $('dDate').value = isoDay(new Date());
-  $('dFrom').value = '00:00'; $('dTo').value = '23:59';
+  detPick.val = histMode && lvPick.val ? JSON.parse(JSON.stringify(lvPick.val)) : DatePick.day(isoDay(new Date()));
+  detPick.render();
   map.removeLayer(fleetLayer); detLayer.addTo(map);
   detTab(tab);
   loadDetTrips();
 }
 function closeDetail() {
   detImei = null; detTrips = []; GEO.q = [];
-  detLayer.clearLayers(); map.removeLayer(detLayer); fleetLayer.addTo(map);
+  detLayer.clearLayers(); map.removeLayer(detLayer); if (!histMode) fleetLayer.addTo(map);
   $('trips').hidden = true; map.invalidateSize();
   $('lvDet').hidden = true;
   if (searchDone) { $('lvRes').hidden = false; renderList(); } else $('lvForm').hidden = false;
@@ -913,8 +1225,9 @@ function computeTrips(pts) {
     const prev = runs[k - 1], next = runs[k + 1];
     const si = prev ? (prev.gap ? r.s : prev.e) : r.s, ei = next ? next.s : r.e;
     const seg = pts.slice(si, ei + 1);
-    let km = 0, vmax = 0;
-    for (let i = 1; i < seg.length; i++) { if (T(seg[i]) - T(seg[i - 1]) <= GAP_MS) km += dist(seg[i - 1], seg[i]); vmax = Math.max(vmax, seg[i].speed || 0); }
+    let km = 0;
+    for (let i = 1; i < seg.length; i++) if (T(seg[i]) - T(seg[i - 1]) <= GAP_MS) km += dist(seg[i - 1], seg[i]);
+    const vmax = vmaxOf(seg);
     if (km < 0.05) return;
     // contact ON pendant l'arrêt précédent
     let contactOn = null;
@@ -928,21 +1241,25 @@ function computeTrips(pts) {
 }
 
 async function loadDetTrips() {
-  const day = $('dDate').value;
-  const from = new Date(`${day}T${$('dFrom').value || '00:00'}:00`);
-  const to = new Date(`${day}T${$('dTo').value || '23:59'}:59`);
-  if (to <= from) to.setDate(to.getDate() + 1);
+  const ivs = detPick.intervals() || [[new Date(`${isoDay(new Date())}T00:00:00`), new Date(`${isoDay(new Date())}T23:59:59`)]];
   GEO.q = [];
   $('dTimeline').innerHTML = '<p class="msg">Chargement…</p>';
   detLayer.clearLayers();
-  const pts = cleanTrack(await fetchPositions(detImei, from, to));
-  detTrips = computeTrips(pts);
-  detSel = null;
+  detTrips = []; detSel = null;
+  let nPts = 0;
+  const lines = [];
+  for (const [from, to] of ivs) {
+    const pts = cleanTrack(await fetchPositions(detImei, from, to));
+    nPts += pts.length;
+    if (pts.length > 1) lines.push(pts);
+    computeTrips(pts).forEach((t) => { t.n = detTrips.length + 1; detTrips.push(t); });
+  }
   const d = devices.get(detImei);
 
-  // carte : tracé complet + flèches de direction
-  if (pts.length > 1) {
-    const line = L.polyline(pts.map((p) => [p.lat, p.lng]), { color: '#1d4f8f', weight: 4, opacity: 0.9 }).addTo(detLayer);
+  // carte : tracé(s) + flèches de direction
+  const group = [];
+  for (const pts of lines) {
+    group.push(L.polyline(pts.map((p) => [p.lat, p.lng]), { color: '#1d4f8f', weight: 4, opacity: 0.9 }).addTo(detLayer));
     let acc = 0;
     for (let i = 1; i < pts.length; i++) {
       acc += dist(pts[i - 1], pts[i]);
@@ -952,31 +1269,37 @@ async function loadDetTrips() {
           html: `<svg viewBox="0 0 16 16" style="transform:rotate(${bearing(pts[i - 1], pts[i])}deg)"><path d="M8 1 L14 14 L8 10.5 L2 14 Z" fill="#1d4f8f" stroke="#fff" stroke-width="1.2"/></svg>` }) }).addTo(detLayer);
       }
     }
-    map.fitBounds(line.getBounds(), { padding: [40, 40] });
   }
-  if (d && d.last) L.marker([d.last.lat, d.last.lng], { icon: icon(d.last) }).bindPopup(popup(d)).addTo(detLayer);
+  if (group.length) map.fitBounds(L.featureGroup(group).getBounds(), { padding: [40, 40] });
+  if (d && d.last && !histMode) L.marker([d.last.lat, d.last.lng], { icon: icon(d.last) }).bindPopup(popup(d)).addTo(detLayer);
 
   const km = detTrips.reduce((a, t) => a + t.km, 0), sec = detTrips.reduce((a, t) => a + t.dur, 0);
+  const periodTxt = esc(detPick.text());
   if (!detTrips.length) {
-    $('dTimeline').innerHTML = `<div class="box"><b>${new Date(day + 'T12:00').toLocaleDateString('fr-FR')}</b><p class="msg">${pts.length ? 'Aucun trajet sur cette période (véhicule à l\'arrêt).' : 'Aucune donnée sur cette période.'}</p></div>`;
+    $('dTimeline').innerHTML = `<div class="box"><b>${periodTxt}</b><p class="msg">${nPts ? 'Aucun trajet sur cette période (véhicule à l\'arrêt).' : 'Aucune donnée sur cette période.'}</p></div>`;
     $('trips').hidden = true; map.invalidateSize();
     return;
   }
+  let lastDay = '';
   $('dTimeline').innerHTML = `<div class="box">
-    <div style="display:flex;justify-content:space-between"><b>${new Date(day + 'T12:00').toLocaleDateString('fr-FR')}</b><span class="msg" style="margin:0">${detTrips.length} parcours</span></div>
+    <div style="display:flex;justify-content:space-between;gap:8px"><b>${periodTxt}</b><span class="msg" style="margin:0;white-space:nowrap">${detTrips.length} parcours</span></div>
     <div class="sum"><span>Vitesse moy. : ${sec ? (km / (sec / 3600)).toFixed(2) : 0} km/h</span><span>Distance : ${km.toFixed(2)} km</span></div>
-    <div class="tl">${detTrips.map((t) => `<div class="tl-trip" data-n="${t.n}">
+    <div class="tl">${detTrips.map((t) => {
+      const day = isoDay(new Date(t.start.ts));
+      const dh = detPick.val && detPick.val.days.length > 1 ? (day !== lastDay ? `<div class="tl-day">${new Date(day + 'T12:00').toLocaleDateString('fr-FR', { weekday: 'long', day: '2-digit', month: '2-digit' })}</div>` : '') : '';
+      lastDay = day;
+      return dh + `<div class="tl-trip" data-n="${t.n}">
       <h4>Parcours ${t.n}${t.enCours ? ' <small style="color:var(--move)">(en cours)</small>' : ''}</h4>
       ${t.contactOn ? `<div class="tl-ev"><span class="ic on">⏻</span><span class="tm">${fmtHMS(t.contactOn)}</span><br>Contact ON</div>` : ''}
       <div class="tl-ev"><span class="ic">▶</span><span class="tm">${fmtHMS(t.start.ts)}</span><br>Départ ${fillAddr(t.start.lat, t.start.lng, (a) => { t.addrS = a; })}</div>
       <div class="tl-dur">Durée du trajet : ${fmtDur(t.dur)} · Distance parcourue : ${t.km.toFixed(2)} km</div>
       <div class="tl-ev"><span class="ic">⚑</span><span class="tm">${fmtHMS(t.end.ts)}</span><br>${t.enCours ? 'Dernière position' : 'Arrivée'} ${fillAddr(t.end.lat, t.end.lng, (a) => { t.addrE = a; })}</div>
-    </div>`).join('')}</div></div>`;
+    </div>`; }).join('')}</div></div>`;
   $('dTimeline').querySelectorAll('.tl-trip').forEach((el) => el.onclick = () => selectTrip(+el.dataset.n));
 
-  // tableau des trajets
   $('trips').hidden = false;
-  $('tripsTitle').innerHTML = `Trajets pour <b>${esc(label(d))}</b> du <b>${new Date(day + 'T12:00').toLocaleDateString('fr-FR')}</b> de <b>${fmtHMS(detTrips[0].start.ts)}</b> à <b>${fmtHMS(detTrips[detTrips.length - 1].end.ts)}</b>`;
+  const a = detTrips[0].start.ts, b = detTrips[detTrips.length - 1].end.ts;
+  $('tripsTitle').innerHTML = `Trajets pour <b>${esc(label(d))}</b> du <b>${new Date(a).toLocaleDateString('fr-FR')} ${fmtHMS(a)}</b> au <b>${new Date(b).toLocaleDateString('fr-FR')} ${fmtHMS(b)}</b>`;
   tPage = 0; tFilters = {};
   renderTripsTable(true);
   setTimeout(() => map.invalidateSize(), 50);
@@ -997,6 +1320,7 @@ function selectTrip(n) {
 // Tableau « Trajets » (filtres par colonne, pagination, export)
 const TCOLS = [
   ['n', 'N°', (t) => t.n],
+  ['jour', 'Date', (t) => new Date(t.start.ts).toLocaleDateString('fr-FR')],
   ['contact', 'Contact ON', (t) => (t.contactOn ? fmtHMS(t.contactOn) : '')],
   ['arret', 'Arrêt', (t) => fmtDur(t.stopBefore)],
   ['depart', 'Départ', (t) => fmtHMS(t.start.ts)],
@@ -1040,7 +1364,7 @@ function exportTrips() {
     .map((l) => l.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\r\n');
   const a = document.createElement('a');
   a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-  a.download = `trajets_${label(d).replace(/\W+/g, '_')}_${$('dDate').value}.csv`;
+  a.download = `trajets_${label(d).replace(/\W+/g, '_')}_${detPick.val ? detPick.val.days[0] : isoDay(new Date())}.csv`;
   a.click();
 }
 // ---------- Historique ----------
@@ -1063,9 +1387,11 @@ async function loadHistory() {
     if (data.length < 1000) break;
   }
   histPts = cleanTrack(rows);
+  playStop();
   histLayer.clearLayers();
-  cursor = null;
+  cursor = null; trail = null;
   $('hSlider').hidden = true;
+  $('hPlayer').hidden = true;
   $('hInfo').textContent = '';
   if (!histPts.length) { $('hStats').innerHTML = '<p class="msg">Aucune donnée sur cette période.</p>'; return; }
 
@@ -1077,7 +1403,7 @@ async function loadHistory() {
     if (a.speed > 3 || b.speed > 3) km += dist(a, b);
     if (a.speed > 3) driveMin += Math.min(dt, 5);
   }
-  histPts.forEach((p) => { vmax = Math.max(vmax, p.speed); });
+  vmax = vmaxOf(histPts);
 
   // Arrêts de 5 min ou plus
   const stops = [];
@@ -1111,14 +1437,63 @@ async function loadHistory() {
   $('hSlider').max = histPts.length - 1;
   $('hSlider').value = 0;
   $('hSlider').hidden = false;
+  $('hPlayer').hidden = false;
+  playStop();
+  trail = L.polyline([], { color: '#f97316', weight: 5, opacity: 0.9 }).addTo(histLayer);
   moveCursor(0);
 }
-function moveCursor(i) {
+function moveCursor(i, frac = 0) {
   const p = histPts[i];
   if (!p) return;
-  if (!cursor) cursor = L.marker([p.lat, p.lng], { icon: icon({ ...p, ts: new Date().toISOString(), speed: Math.max(p.speed, 4) }) }).addTo(histLayer);
-  cursor.setLatLng([p.lat, p.lng]).setIcon(icon({ ...p, ts: new Date().toISOString(), speed: Math.max(p.speed, 4) }));
-  $('hInfo').textContent = `${fmtTime(p.ts)} · ${p.speed} km/h · contact ${p.ignition ? 'ON' : 'OFF'}`;
+  const q = histPts[i + 1];
+  const lat = q && frac ? p.lat + (q.lat - p.lat) * frac : p.lat;
+  const lng = q && frac ? p.lng + (q.lng - p.lng) * frac : p.lng;
+  const ang = q && dist(p, q) > 0.005 ? bearing(p, q) : (p.angle || 0);
+  const ic = icon({ ...p, angle: ang, ts: new Date().toISOString(), speed: Math.max(p.speed, 4) });
+  if (!cursor) cursor = L.marker([lat, lng], { icon: ic, zIndexOffset: 1000 }).addTo(histLayer);
+  cursor.setLatLng([lat, lng]).setIcon(ic);
+  if (trail) trail.setLatLngs(histPts.slice(0, i + 1).map((x) => [x.lat, x.lng]).concat([[lat, lng]]));
+  if (play.on && $('hFollow').checked && !map.getBounds().pad(-0.2).contains([lat, lng])) map.panTo([lat, lng], { animate: true });
+  const tsNow = q && frac ? new Date(T(p) + (T(q) - T(p)) * frac) : new Date(p.ts);
+  $('hInfo').innerHTML = `<b>${fmtTime(tsNow)}</b> · ${p.speed} km/h · contact ${p.ignition ? 'ON' : 'OFF'}`;
+}
+
+// Lecture animée : l'horloge simulée avance à la vitesse choisie (×10 … ×300)
+let trail = null;
+const play = { on: false, idx: 0, sim: 0, last: 0, raf: 0 };
+function playStop() {
+  play.on = false; cancelAnimationFrame(play.raf);
+  if ($('hPlay')) $('hPlay').textContent = '▶';
+}
+function playSeek(i) {
+  play.idx = Math.max(0, Math.min(histPts.length - 1, i));
+  play.sim = histPts.length ? T(histPts[play.idx]) : 0;
+  $('hSlider').value = play.idx;
+  moveCursor(play.idx);
+}
+function playToggle() {
+  if (!histPts.length) return;
+  if (play.on) { playStop(); return; }
+  if (play.idx >= histPts.length - 1) playSeek(0);
+  if (!play.sim) play.sim = T(histPts[play.idx]);
+  play.on = true; $('hPlay').textContent = '⏸';
+  play.last = performance.now();
+  const step = (now) => {
+    if (!play.on) return;
+    const dt = Math.min(0.25, (now - play.last) / 1000); play.last = now;
+    play.sim += dt * 1000 * (+$('hSpeed').value);
+    const nxt = histPts[play.idx + 1];
+    // passer les arrêts : saute directement à la reprise si l'attente dépasse 30 s simulées
+    if (nxt && $('hSkip').checked && T(nxt) - play.sim > 30000 && (histPts[play.idx].speed || 0) <= 3) play.sim = T(nxt) - 1000;
+    while (play.idx < histPts.length - 1 && T(histPts[play.idx + 1]) <= play.sim) play.idx++;
+    if (play.idx >= histPts.length - 1) { moveCursor(histPts.length - 1); $('hSlider').value = play.idx; playStop(); return; }
+    const a = histPts[play.idx], b = histPts[play.idx + 1];
+    const frac = Math.max(0, Math.min(1, (play.sim - T(a)) / Math.max(1, T(b) - T(a))));
+    $('hSlider').value = play.idx;
+    moveCursor(play.idx, frac);
+    play.raf = requestAnimationFrame(step);
+  };
+  play.raf = requestAnimationFrame(step);
 }
 
 // ---------- Circuits : taux de réalisation ----------
@@ -1378,6 +1753,8 @@ let curTab = 'live';
 document.querySelectorAll('.rb[data-tab]').forEach((b) => b.onclick = () => {
   document.querySelectorAll('.rb[data-tab]').forEach((x) => x.classList.toggle('on', x === b));
   const tab = curTab = b.dataset.tab;
+  if (tab !== 'hist') playStop();
+  closeDatePickers();
   ['live', 'hist', 'circ', 'rep'].forEach((k) => { $('tab-' + k).hidden = k !== tab; });
   // calques de la carte
   const want = {
@@ -1408,9 +1785,12 @@ document.querySelectorAll('.utabs button').forEach((b) => b.onclick = () => {
 $('search').oninput = () => { if (searchDone) renderList(); };
 $('search').onkeydown = (e) => { if (e.key === 'Enter') runSearch(); };
 $('lvGo').onclick = runSearch;
-$('lvBack').onclick = () => { $('lvRes').hidden = true; $('lvForm').hidden = false; };
+$('lvBack').onclick = () => {
+  $('lvRes').hidden = true; $('lvForm').hidden = false;
+  if (histMode) { histMode = false; actMap.clear(); renderList(); fleetLayer.addTo(map); }
+};
 $('lvSort').onchange = renderList;
-$('lvRefresh').onclick = async () => { await loadFleet(false); loadLiveRates(); };
+$('lvRefresh').onclick = async () => { if (!$('lvCircRes').hidden || histMode) { runSearch(); return; } await loadFleet(false); loadLiveRates(); };
 $('dClose').onclick = closeDetail;
 document.querySelectorAll('.det-tabs button').forEach((b) => b.onclick = () => detTab(b.dataset.d));
 $('dGo').onclick = loadDetTrips;
@@ -1425,8 +1805,13 @@ $('tNext').onclick = () => { tPage++; renderTripsTable(); };
 $('tripsCsv').onclick = exportTrips;
 
 $('hGo').onclick = loadHistory;
-$('hSlider').oninput = (e) => moveCursor(+e.target.value);
-$('hDate').value = $('cDate').value = $('dDate').value = isoDay(new Date());
+$('hSlider').oninput = (e) => { playStop(); playSeek(+e.target.value); };
+$('hPlay').onclick = playToggle;
+$('hRestart').onclick = () => { playStop(); playSeek(0); };
+$('hDate').value = $('cDate').value = isoDay(new Date());
+const lvPick = new DatePick($('lvDate'), { placeholder: 'Choisir une date pour la recherche historique',
+  onChange: (v) => { $('lvGo').textContent = v ? 'Recherche historique' : 'Recherche temps réel'; } });
+const detPick = new DatePick($('dDateField'), { allowEmpty: false, value: DatePick.day(isoDay(new Date())) });
 $('cCirc').onchange = showCircuit;
 $('cGo').onclick = calcCircuit;
 {
