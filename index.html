@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SOS RABAT TEST – Suivi GPS</title>
+<title>SOS Al Bayda – Suivi GPS</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
   :root {
@@ -104,6 +104,7 @@
   .card .pct { font-weight: 700; font-size: 13px; color: var(--move); display: flex; align-items: center; gap: 4px; white-space: nowrap; }
   .card .pct svg { width: 18px; height: 18px; }
   .warn { color: #f59e0b; font-size: 13px; }
+  .wdot { display: inline-block; width: 15px; height: 15px; border-radius: 50%; background: #f59e0b; color: #fff; font-size: 11px; font-weight: 700; line-height: 15px; text-align: center; vertical-align: middle; }
   .card-acts { display: flex; justify-content: center; gap: 18px; padding: 6px 0 8px; border-bottom: 1px solid var(--border); background: #eef3fa; }
 
   /* fiche véhicule */
@@ -538,7 +539,7 @@
         <label class="chk" style="margin:0"><input type="checkbox" id="alUnread"> Non lues seulement</label>
         <button class="btn" id="alGo" style="width:auto">Afficher</button>
         <button class="btn2" id="alAllRead">Tout marquer comme lu</button>
-        <label class="chk" style="margin:0" title="Bip sonore à chaque nouvelle alerte"><input type="checkbox" id="alSound"> 🔊 Son</label>
+        <label class="chk" style="margin:0" title="Bip sonore à chaque nouvelle alerte"><input type="checkbox" id="alSound"> Son</label>
       </div>
       <div class="alchips" id="alChips"></div>
       <div id="alGrid"></div>
@@ -560,7 +561,7 @@
     <datalist id="dlLots"></datalist><datalist id="dlCats"></datalist>
     <div id="admVeh">
       <div class="rep-ctrl">
-        <input id="avSearch" placeholder="🔍 Rechercher (IMEI, nom, catégorie…)" style="max-width:280px">
+        <input id="avSearch" placeholder="Rechercher (IMEI, nom, catégorie…)" style="max-width:280px">
         <span class="msg" style="margin:0 0 0 8px">Pour les véhicules cochés :</span>
         <input id="avBulkLot" list="dlLots" placeholder="Lot" style="max-width:120px">
         <input id="avBulkCat" list="dlCats" placeholder="Catégorie" style="max-width:190px">
@@ -634,7 +635,7 @@
 const SUPABASE_URL = 'https://zhhpkuxkqzxttdaqwpyx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpoaHBrdXhrcXp4dHRkYXF3cHl4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTMxMTUzNjEsImV4cCI6MjEwODY5MTM2MX0.oKbDSNa1qV-8NXm_g3IhNIvBluifDep1w98s9-Asrzk';   // clé anon / publishable (PAS la service_role)
 const OFFLINE_MIN = 15;                              // minutes sans données => hors ligne
-const ALERT_HOURS = 24;                              // au-delà : ⚠ sur la carte du véhicule
+const ALERT_HOURS = 24;                              // au-delà : point d'alerte sur la carte du véhicule
 const SUPPORT_CONTACT = '';   // ex. 'mailto:support@tondomaine.ma' ou 'tel:+212600000000' (vide = lien masqué)
 // =============================
 
@@ -772,7 +773,7 @@ function batteryHtml(p) {
   const b = battery(p);
   if (!b) return '';
   const col = b.pct > 50 ? '#16a34a' : b.pct > 20 ? '#f59e0b' : '#BD171E';
-  return `<span style="white-space:nowrap" title="${b.est ? 'Estimé depuis la tension ' + b.v.toFixed(2) + ' V' : 'Niveau batterie (IO 113)'}">🔋 <b style="color:${col}">${b.est ? '≈' : ''}${b.pct} %</b></span>`;
+  return `<span style="white-space:nowrap" title="${b.est ? 'Estimé depuis la tension ' + b.v.toFixed(2) + ' V' : 'Niveau batterie (IO 113)'}">Batt. <b style="color:${col}">${b.est ? '≈' : ''}${b.pct} %</b></span>`;
 }
 function popup(d) {
   const p = d.last, bat = batteryHtml(p);
@@ -1175,7 +1176,7 @@ function renderList() {
         const r = liveRates.get(d.imei);
         const stale = d.last && (Date.now() - T(d.last)) / 3600000 > ALERT_HOURS;
         const card = `<div class="card${selImei === d.imei ? ' sel' : ''}" data-i="${d.imei}">${cardRing(d)}
-          <div class="info"><div class="when">${d.last ? fmtDT(d.last.ts) : 'Aucune position'}${stale ? ' <span class="warn" title="Pas de données depuis plus de ' + ALERT_HOURS + ' h">⚠</span>' : ''}</div>
+          <div class="info"><div class="when">${d.last ? fmtDT(d.last.ts) : 'Aucune position'}${stale ? ' <span class="wdot" title="Pas de données depuis plus de ' + ALERT_HOURS + ' h">!</span>' : ''}</div>
           <div class="nm">${esc(label(d))}</div>${r ? `<div class="circ">${circLine(d)}</div>` : ''}</div>
           ${r && r.taux !== null ? `<div class="pct" style="color:${tauxCol(r.taux, r.plan.seuil)}" title="Taux de réalisation du circuit en cours">${RATE_SVG}${r.taux}%</div>` : ''}
           ${battery(d.last) ? `<div style="font-size:12px">${batteryHtml(d.last)}</div>` : ''}</div>`;
@@ -1467,7 +1468,7 @@ async function loadDetTrips() {
       ${t.contactOn ? `<div class="tl-ev"><span class="ic on">⏻</span><span class="tm">${fmtHMS(t.contactOn)}</span><br>Contact ON</div>` : ''}
       <div class="tl-ev"><span class="ic">▶</span><span class="tm">${fmtHMS(t.start.ts)}</span><br>Départ ${fillAddr(t.start.lat, t.start.lng, (a) => { t.addrS = a; })}</div>
       <div class="tl-dur">Durée du trajet : ${fmtDur(t.dur)} · Distance parcourue : ${t.km.toFixed(2)} km</div>
-      <div class="tl-ev"><span class="ic">⚑</span><span class="tm">${fmtHMS(t.end.ts)}</span><br>${t.enCours ? 'Dernière position' : 'Arrivée'} ${fillAddr(t.end.lat, t.end.lng, (a) => { t.addrE = a; })}</div>
+      <div class="tl-ev"><span class="ic">■</span><span class="tm">${fmtHMS(t.end.ts)}</span><br>${t.enCours ? 'Dernière position' : 'Arrivée'} ${fillAddr(t.end.lat, t.end.lng, (a) => { t.addrE = a; })}</div>
     </div>`; }).join('')}</div></div>`;
   $('dTimeline').querySelectorAll('.tl-trip').forEach((el) => el.onclick = () => selectTrip(+el.dataset.n));
 
@@ -1517,7 +1518,7 @@ function renderTripsTable(rebuildHead) {
   const slice = rows.slice(tPage * per, tPage * per + per);
   if (rebuildHead || !$('tripsTbl').tHead) {
     $('tripsTbl').innerHTML = `<thead><tr>${TCOLS.map(([, h]) => `<th>${h}</th>`).join('')}</tr>
-      <tr class="flt">${TCOLS.map(([k]) => `<th><input data-f="${k}" placeholder="🔍 Rechercher"></th>`).join('')}</tr></thead><tbody></tbody>`;
+      <tr class="flt">${TCOLS.map(([k]) => `<th><input data-f="${k}" placeholder="Rechercher"></th>`).join('')}</tr></thead><tbody></tbody>`;
     $('tripsTbl').querySelectorAll('input[data-f]').forEach((i) => i.oninput = () => { tFilters[i.dataset.f] = i.value; tPage = 0; renderTripsTable(); });
   }
   $('tripsTbl').tBodies[0].innerHTML = slice.map((t) => `<tr data-n="${t.n}" class="${detSel === t.n ? 'sel' : ''}">${TCOLS.map(([k, , f]) => {
@@ -1862,7 +1863,7 @@ async function loadPlanning() {
       <td>${p.heure_debut.slice(0, 5)} → ${p.heure_fin.slice(0, 5)}${p.heure_fin < p.heure_debut ? ' (J+1)' : ''}</td>
       <td class="days">${JOURS.map(([k, l]) => `<span class="${p[k] ? 'on' : ''}">${l}</span>`).join('')}</td>
       <td>${p.tolerance} m</td>
-      <td>${p.actif ? '✅' : '—'}</td>
+      <td>${p.actif ? 'Oui' : 'Non'}</td>
       <td><button class="btn2" style="padding:5px 10px" data-edit="${i}">Modifier</button></td></tr>`).join('')}</tbody></table>`
     : '<p class="msg">Aucune affectation pour l\'instant.</p>'}`;
   $('pAdd').onclick = () => planForm(null);
@@ -1955,7 +1956,7 @@ class Grid {
       this.el.innerHTML = `<div class="gw"><table class="gtbl dgrid"><thead>
         ${hasGrp ? `<tr class="grp">${groups.map((g) => `<th colspan="${g.n}" class="${g.g ? 'g' : ''}">${esc(g.g)}</th>`).join('')}</tr>` : ''}
         <tr class="hd">${this.cols.map((c) => `<th data-s="${c.k}" title="Trier">${esc(c.h)} <span class="si"></span></th>`).join('')}</tr>
-        <tr class="flt">${this.cols.map((c) => `<th><input data-f="${c.k}" placeholder="🔍"></th>`).join('')}</tr></thead><tbody></tbody>
+        <tr class="flt">${this.cols.map((c) => `<th><input data-f="${c.k}" placeholder="Filtrer"></th>`).join('')}</tr></thead><tbody></tbody>
         ${this.o.total ? '<tfoot></tfoot>' : ''}</table></div>
         <div class="tr-foot"><button class="ibtn" data-x="csv" title="Exporter vers Excel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/><path d="M9 12l5 6M14 12l-5 6"/></svg></button>
         <span class="gi"></span><select class="gp"><option>25</option><option>50</option><option selected>100</option><option>500</option></select> Lignes par page
@@ -2213,20 +2214,20 @@ function renderFdr() {
       <th>Secteur</th><th>Type véhicule</th><th>N° Parc</th><th>Départ</th><th>Arrivée</th><th>Total</th><th>KM départ</th><th>KM arrivée</th><th>KM parc.</th>
       <th>Chauffeur</th><th>Agents</th><th>Tours</th><th>Resp. hiér.</th><th>Lieu de vidage</th><th>Tickets (kg)</th><th>Tonnage (t)</th><th>Circuit</th><th>Tx réal.</th><th>kg / km</th><th></th></tr></thead>
       <tbody>${rs.map((f) => { const kg = tonKg(f), t = f.taux === null || f.taux === undefined ? null : Number(f.taux);
-        return `<tr><td>${esc(f.secteur || '')}</td><td>${esc(f.type_vehicule || f.categorie || '')}</td><td><b>${esc(f.vehicule || f.device_name || '')}</b>${f.imei ? '' : ' <span title="Véhicule non reconnu parmi les boîtiers" class="warn">⚠</span>'}</td>
+        return `<tr><td>${esc(f.secteur || '')}</td><td>${esc(f.type_vehicule || f.categorie || '')}</td><td><b>${esc(f.vehicule || f.device_name || '')}</b>${f.imei ? '' : ' <span title="Véhicule non reconnu parmi les boîtiers" class="wdot">!</span>'}</td>
           <td>${hm(f.heure_depart)}</td><td>${hm(f.heure_arrivee)}</td><td>${hhmmDiff(hm(f.heure_depart), hm(f.heure_arrivee))}</td>
-          <td>${f.km_depart ?? ''}</td><td>${f.km_arrivee ?? ''}</td><td>${f.km_parcouru ?? ''}${f.km_parcouru !== null && f.km_parcouru !== undefined && (f.km_parcouru < 0 || f.km_parcouru > 400) ? ' <span class="warn" title="Kilométrage incohérent : vérifier KM départ / arrivée">⚠</span>' : ''}</td><td>${esc(f.chauffeur || '')}</td><td>${f.nb_agents ?? ''}</td><td>${f.nb_tours ?? ''}</td>
+          <td>${f.km_depart ?? ''}</td><td>${f.km_arrivee ?? ''}</td><td>${f.km_parcouru ?? ''}${f.km_parcouru !== null && f.km_parcouru !== undefined && (f.km_parcouru < 0 || f.km_parcouru > 400) ? ' <span class="wdot" title="Kilométrage incohérent : vérifier KM départ / arrivée">!</span>' : ''}</td><td>${esc(f.chauffeur || '')}</td><td>${f.nb_agents ?? ''}</td><td>${f.nb_tours ?? ''}</td>
           <td>${esc(f.resp_hierarchique || '')}</td><td>${esc(f.lieu_vidage || '')}</td>
           <td class="tk">${(f.tickets || []).map((x) => `${esc(x.n || '—')} : ${Number(x.kg || 0).toLocaleString('fr-FR')}`).join('<br>') || '<small class="msg">sans ticket</small>'}</td>
           <td><b>${(kg / 1000).toFixed(2)}</b></td><td>${f.circuit_code ? `<b>${esc(f.circuit_code)}</b>` : '<small class="msg">non lié</small>'}</td>
           <td>${t === null ? '' : `<b style="color:${tauxCol(t, f.seuil)}">${t.toFixed(1)} %</b>`}</td>
           <td>${f.km_parcouru > 0 ? (kg / f.km_parcouru).toFixed(0) : ''}</td>
-          <td style="white-space:nowrap"><button class="ibtn" data-ed="${f.id}" title="Modifier">✎</button><button class="ibtn" data-del="${f.id}" title="Supprimer" style="color:#BD171E">🗑</button></td></tr>`; }).join('')}</tbody>
+          <td style="white-space:nowrap"><button class="ibtn" data-ed="${f.id}" title="Modifier">✎</button><button class="ibtn" data-del="${f.id}" title="Supprimer" style="color:#BD171E">Supprimer</button></td></tr>`; }).join('')}</tbody>
       <tfoot><tr><td colspan="15"><b>TOTAL</b></td><td><b>${(gt / 1000).toFixed(2)}</b></td><td colspan="4"></td></tr></tfoot></table></div></div>`;
   }).join('') + `<div class="f-total">TOTAL GÉNÉRAL : <b>${(tot / 1000).toFixed(2)} t</b></div>`;
   $('fBody').querySelectorAll('[data-ed]').forEach((b) => b.onclick = () => fdrForm(fdrRows.find((f) => f.id === +b.dataset.ed)));
   $('fBody').querySelectorAll('[data-del]').forEach((b) => b.onclick = async () => {
-    if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = 'Confirmer ?'; setTimeout(() => { b.dataset.sure = ''; b.textContent = '🗑'; }, 3000); return; }
+    if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = 'Confirmer ?'; setTimeout(() => { b.dataset.sure = ''; b.textContent = 'Supprimer'; }, 3000); return; }
     const { error } = await sb.from('feuilles_route').delete().eq('id', +b.dataset.del);
     if (error) return showErr(error.message);
     loadFdr();
@@ -2283,7 +2284,7 @@ function fdrForm(f) {
   };
   const vehChange = async () => {
     const d = deviceByParc($('ffVeh').value);
-    $('ffVehInfo').innerHTML = d ? `✓ boîtier reconnu (${esc(d.imei)})` : $('ffVeh').value ? '<span class="warn">⚠ non reconnu parmi les boîtiers</span>' : '';
+    $('ffVehInfo').innerHTML = d ? `✓ boîtier reconnu (${esc(d.imei)})` : $('ffVeh').value ? '<span class="warn">non reconnu parmi les boîtiers</span>' : '';
     if (d && !$('ffTypeV').value && d.categorie) $('ffTypeV').value = d.categorie;
     if (d && !$('ffCirc').value) { const c = await suggestCircuit(d.imei, f.jour, $('ffHd').value); if (c) $('ffCirc').value = c; }
   };
@@ -2407,7 +2408,7 @@ async function fdrImport(file) {
   const unknown = rows.filter((r) => !deviceByParc(r.vehicule)).length;
   $('fForm').innerHTML = `<div class="stat fform"><b style="font-size:16px">Import : ${esc(file.name)}</b>
     <p class="msg">${rows.length} lignes reconnues · ${arrs.length} arrondissement(s) : ${esc(arrs.join(', '))} · tonnage ${(kg / 1000).toFixed(2)} t
-    ${unknown ? `<br><span class="warn">⚠ ${unknown} véhicule(s) non reconnu(s) parmi les boîtiers : la ligne sera importée sans lien GPS.</span>` : ''}</p>
+    ${unknown ? `<br><span class="warn">${unknown} véhicule(s) non reconnu(s) parmi les boîtiers : la ligne sera importée sans lien GPS.</span>` : ''}</p>
     <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap"><label style="margin:0">Importer à la date<input type="date" id="fiDate" value="${date || $('fJour').value}"></label>
     <button class="btn" style="width:auto;padding:9px 18px" id="fiGo">Importer</button><button class="btn2" id="fiCancel">Annuler</button></div><div id="fiMsg" class="msg"></div></div>`;
   $('fiCancel').onclick = () => { $('fForm').innerHTML = ''; };
@@ -2664,9 +2665,9 @@ async function loadAdmCirc() {
       <td><input data-k="shift" value="${esc(c.shift || '')}" style="width:90px"></td><td><input type="number" data-k="seuil" value="${c.seuil ?? 90}" style="width:70px"></td>
       <td style="text-align:center"><input type="checkbox" data-k="sens_strict" ${c.sens_strict ? 'checked' : ''} style="width:auto"></td>
       <td>${c.km}</td><td>${c.nb_planning}</td><td>${c.nb_resultats}</td>
-      <td style="white-space:nowrap"><button class="ibtn" data-v="${c.id}" title="Voir sur la carte">👁</button>
+      <td style="white-space:nowrap"><button class="ibtn" data-v="${c.id}" title="Voir sur la carte">Voir</button>
         <button class="btn2" data-s="${c.id}" style="padding:4px 10px" hidden>Enregistrer</button>
-        <button class="ibtn" data-d="${c.id}" style="color:#BD171E" title="Supprimer">🗑</button></td></tr>`).join('')}</tbody></table></div>`
+        <button class="ibtn" data-d="${c.id}" style="color:#BD171E" title="Supprimer">Supprimer</button></td></tr>`).join('')}</tbody></table></div>`
     : '<p class="msg">Aucun circuit pour l\'instant : importe un shapefile ci-dessus.</p>';
   $('acList').querySelectorAll('tr[data-id] input').forEach((i) => i.oninput = i.onchange = () => {
     const tr = i.closest('tr'); tr.classList.add('dirty'); tr.querySelector('[data-s]').hidden = false;
@@ -2684,7 +2685,7 @@ async function loadAdmCirc() {
     const c = data.find((x) => x.id === +b.dataset.d);
     if (b.dataset.sure !== '1') {
       b.dataset.sure = '1'; b.textContent = c.nb_planning || c.nb_resultats ? `Supprimer aussi ${c.nb_planning} affectation(s) et ${c.nb_resultats} résultat(s) ?` : 'Confirmer ?';
-      setTimeout(() => { b.dataset.sure = ''; b.textContent = '🗑'; }, 5000); return;
+      setTimeout(() => { b.dataset.sure = ''; b.textContent = 'Supprimer'; }, 5000); return;
     }
     const { error: e } = await sb.from('circuits').delete().eq('id', c.id);
     if (e) { showToast(e.message, 5000); return; }
@@ -2701,12 +2702,12 @@ async function loadAdmCirc() {
 //  ALERTES
 // =====================================================================
 const ALR = {
-  vitesse: ['🚀', 'Excès de vitesse'], alim: ['🔌', 'Coupure d\'alimentation'], batterie: ['🔋', 'Batterie boîtier faible'],
-  hors_ligne: ['📡', 'Boîtier hors ligne'], ralenti: ['⏱️', 'Ralenti excessif'], non_demarre: ['🚫', 'Circuit non démarré'],
-  circuit_faible: ['📉', 'Circuit insuffisant'], hors_horaires: ['🌙', 'Mouvement hors horaires'], zone: ['📍', 'Entrée / sortie de zone'],
+  vitesse: ['', 'Excès de vitesse'], alim: ['', 'Coupure d\'alimentation'], batterie: ['', 'Batterie boîtier faible'],
+  hors_ligne: ['', 'Boîtier hors ligne'], ralenti: ['', 'Ralenti excessif'], non_demarre: ['', 'Circuit non démarré'],
+  circuit_faible: ['', 'Circuit insuffisant'], hors_horaires: ['', 'Mouvement hors horaires'], zone: ['', 'Entrée / sortie de zone'],
 };
 const NIV = { critique: ['Critique', '#BD171E'], warning: ['Attention', '#f59e0b'], info: ['Info', '#2f6fbf'] };
-const alrLbl = (t) => (ALR[t] ? `${ALR[t][0]} ${ALR[t][1]}` : t);
+const alrLbl = (t) => (ALR[t] ? ALR[t][1] : t);
 const vehLbl = (a) => a.vehicule || a.plate || (a.imei ? (devices.get(a.imei) ? label(devices.get(a.imei)) : a.imei) : '—');
 let alrUnread = 0, alrRows = [];
 const zonesLayer = L.layerGroup();
@@ -2772,7 +2773,7 @@ const alrGrid = new Grid($('alGrid'), [
   { k: 'veh', h: 'Véhicule', f: (a) => vehLbl(a) },
   { k: 'msg', h: 'Détail', f: (a) => a.message, html: (a) => `<span style="white-space:normal">${esc(a.message)}</span>` },
   { k: 'lieu', h: 'Lieu', f: (a) => (a.zone_nom || (a.circuit_code ? `Circuit ${a.circuit_code}` : '')),
-    html: (a) => (a.lat !== null && a.lat !== undefined ? `<a href="#" onclick="return false">🗺 Voir</a> ${a.zone_nom ? esc(a.zone_nom) : ''}` : esc(a.circuit_code ? `Circuit ${a.circuit_code}` : '')) },
+    html: (a) => (a.lat !== null && a.lat !== undefined ? `<a href="#" onclick="return false">Voir</a> ${a.zone_nom ? esc(a.zone_nom) : ''}` : esc(a.circuit_code ? `Circuit ${a.circuit_code}` : '')) },
   { k: 'lu', h: 'Statut', f: (a) => (a.lu ? 'Lu' : 'Non lu'),
     html: (a) => (a.lu ? `<small class="msg" title="${esc(a.lu_par || '')}">✓ Lu${a.lu_le ? ' ' + fmtHour(a.lu_le) : ''}</small>`
       : `<button class="btn2" style="padding:3px 9px" data-read="${a.id}">Marquer lu</button>`) },
@@ -2789,8 +2790,8 @@ async function loadAlerts() {
   if (error) return showErr('Alertes : ' + error.message + (/alertes/.test(error.message) ? ' (as-tu exécuté alertes_v11.sql ?)' : ''));
   alrRows = data;
   const cnt = {}; data.forEach((a) => { cnt[a.type] = (cnt[a.type] || 0) + 1; });
-  $('alChips').innerHTML = Object.keys(ALR).filter((t) => cnt[t]).map((t) => `<span class="alchip" data-t="${t}">${ALR[t][0]} ${ALR[t][1]} <b>${cnt[t]}</b></span>`).join('')
-    || '<span class="msg">Aucune alerte sur cette période 👍</span>';
+  $('alChips').innerHTML = Object.keys(ALR).filter((t) => cnt[t]).map((t) => `<span class="alchip" data-t="${t}">${ALR[t][1]} <b>${cnt[t]}</b></span>`).join('')
+    || '<span class="msg">Aucune alerte sur cette période.</span>';
   $('alChips').querySelectorAll('[data-t]').forEach((c) => c.onclick = () => { $('alType').value = c.dataset.t; loadAlerts(); });
   alrGrid.setRows(data);
   bindReadButtons();
@@ -2808,7 +2809,7 @@ async function markRead(ids) {
   loadUnread();
 }
 function fillAlertFilters() {
-  $('alType').innerHTML = '<option value="">Tous les types</option>' + Object.entries(ALR).map(([k, [i, l]]) => `<option value="${k}">${i} ${l}</option>`).join('');
+  $('alType').innerHTML = '<option value="">Tous les types</option>' + Object.entries(ALR).map(([k, [i, l]]) => `<option value="${k}">${l}</option>`).join('');
   $('alVeh').innerHTML = '<option value="">Tous les véhicules</option>' + [...devices.values()].sort((a, b) => label(a).localeCompare(label(b), 'fr', { numeric: true }))
     .map((d) => `<option value="${d.imei}">${esc(label(d))}</option>`).join('');
 }
@@ -2845,7 +2846,7 @@ async function loadZones(drawMain = true) {
   if (drawMain) {
     zonesLayer.clearLayers();
     data.filter((z) => z.actif).forEach((z) => L.circle([z.lat, z.lng], { radius: z.rayon_m, color: '#0d9488', weight: 2, dashArray: '5 5', fillOpacity: 0.06 })
-      .bindTooltip(`📍 ${z.nom}`).addTo(zonesLayer));
+      .bindTooltip(`Zone : ${z.nom}`).addTo(zonesLayer));
   }
 }
 async function renderZonesAdmin() {
@@ -2860,11 +2861,11 @@ async function renderZonesAdmin() {
   drawZones(true);
   $('zList').innerHTML = zonesList.length ? `<table class="gtbl atbl"><thead><tr><th>Zone</th><th>Type</th><th>Rayon</th><th>Entrée</th><th>Sortie</th><th>Active</th><th></th></tr></thead><tbody>
     ${zonesList.map((z) => `<tr><td><b>${esc(z.nom)}</b></td><td>${esc(z.type || '')}</td><td>${z.rayon_m} m</td><td>${z.alerte_entree ? '✓' : ''}</td><td>${z.alerte_sortie ? '✓' : ''}</td><td>${z.actif ? '✓' : '—'}</td>
-      <td style="white-space:nowrap"><button class="ibtn" data-ze="${z.id}" title="Modifier">✎</button><button class="ibtn" data-zd="${z.id}" title="Supprimer" style="color:#BD171E">🗑</button></td></tr>`).join('')}</tbody></table>`
+      <td style="white-space:nowrap"><button class="ibtn" data-ze="${z.id}" title="Modifier">✎</button><button class="ibtn" data-zd="${z.id}" title="Supprimer" style="color:#BD171E">Supprimer</button></td></tr>`).join('')}</tbody></table>`
     : '<p class="msg">Aucune zone. Clique sur « + Nouvelle zone » puis sur la carte.</p>';
   $('zList').querySelectorAll('[data-ze]').forEach((b) => b.onclick = () => { zDraft = { ...zonesList.find((z) => z.id === +b.dataset.ze) }; drawZones(); zoneForm(); zMap.setView([zDraft.lat, zDraft.lng], 16); });
   $('zList').querySelectorAll('[data-zd]').forEach((b) => b.onclick = async () => {
-    if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = 'Confirmer ?'; setTimeout(() => { b.dataset.sure = ''; b.textContent = '🗑'; }, 3000); return; }
+    if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = 'Confirmer ?'; setTimeout(() => { b.dataset.sure = ''; b.textContent = 'Supprimer'; }, 3000); return; }
     const { error } = await sb.from('zones').delete().eq('id', +b.dataset.zd);
     if (error) return showToast(error.message, 4000);
     zDraft = null; $('zForm').innerHTML = ''; renderZonesAdmin();
