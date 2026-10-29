@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SOS RABAT – Suivi GPS</title>
+<title>SOS Al Bayda – Suivi GPS</title>
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 <style>
   :root {
@@ -214,6 +214,55 @@
   .pager button:disabled { color: #c0c6cf; cursor: default; }
   .pager b { display: inline-block; min-width: 22px; text-align: center; border: 1px solid var(--border); border-radius: 2px; margin: 0 4px; }
 
+  /* ---- Panneaux pleine largeur (Data, Rapport, Feuille de route) ---- */
+  .fp { position: absolute; inset: 0; overflow: auto; padding: 18px 22px; background: #fff; z-index: 1100; }
+  .fp h2 { margin: 0 0 12px; font-size: 20px; color: var(--accent-dark); }
+  .fp .rep-ctrl .dfield { margin: 0; min-width: 320px; }
+  .gw { overflow-x: auto; }
+  .dgrid th { cursor: pointer; user-select: none; }
+  .dgrid tr.grp th { text-align: center; background: #eef2f7; color: #374151; border-bottom: 1px solid var(--border); position: static; }
+  .dgrid tr.grp th.g { border-left: 2px solid #fff; }
+  .dgrid tr.hd th { top: 0; }
+  .dgrid td.empty, .gtbl td.empty { text-align: center; color: var(--muted); padding: 40px; }
+  .dgrid tbody tr.click { cursor: pointer; }
+  .dgrid tfoot td { font-weight: 700; border-top: 2px solid var(--border); }
+  .mtabs { display: flex; gap: 0; border-bottom: 1px solid var(--border); margin-bottom: 12px; }
+  .mtabs button { flex: 1; border: 0; background: none; padding: 10px; font-size: 16px; color: #9aa3af; cursor: pointer; border-bottom: 3px solid transparent; }
+  .mtabs button.on { color: var(--accent-dark); font-weight: 700; border-bottom-color: var(--accent); }
+  /* rapport */
+  .kcards { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .kc { border: 1px solid var(--border); border-radius: 8px; padding: 14px 16px; box-shadow: 0 1px 3px rgba(0,0,0,.05); }
+  .kc small { display: block; color: var(--muted); letter-spacing: .5px; font-weight: 600; font-size: 11.5px; }
+  .kc b { display: block; font-size: 28px; margin: 6px 0 2px; }
+  .kc span { color: var(--muted); font-size: 12px; }
+  .kb { border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; }
+  .kb-h { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+  .kb-h .sp { flex: 1; }
+  .kb-logo { width: 34px; height: 34px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 11px; display: flex; align-items: center; justify-content: center; font-weight: 700; }
+  .ktbl { width: 100%; border-collapse: collapse; font-size: 13px; text-align: center; }
+  .ktbl th { background: #f3f5f8; color: #374151; padding: 7px 6px; border: 1px solid #fff; font-weight: 600; }
+  .ktbl tr.grp th { background: #e5eaf1; font-size: 11.5px; letter-spacing: .4px; }
+  .ktbl td { padding: 9px 6px; border: 1px solid #fff; background: #fafbfc; font-weight: 600; }
+  .ktbl td:first-child { text-align: left; }
+  .ktbl .c-ok { background: #dcfce7; color: #166534; } .ktbl .c-run { background: #fef3c7; color: #92400e; }
+  .ktbl .c-ko { background: #fee2e2; color: #991b1b; } .ktbl .c-wait { background: #e0e7ff; color: #3730a3; } .ktbl .c-q { background: #dbeafe; color: #1e40af; }
+  .kb details { border-top: 1px solid var(--border); margin-top: 10px; padding-top: 8px; }
+  .kb summary { cursor: pointer; font-weight: 700; padding: 4px 0; }
+  /* feuille de route */
+  .f-arr { margin: 18px 0 6px; color: var(--accent-dark); font-size: 16px; }
+  .f-grp { margin-bottom: 14px; border: 1px solid var(--border); }
+  .f-gh { background: var(--accent); color: #fff; padding: 7px 12px; font-weight: 700; }
+  .ftbl { font-size: 12.5px; }
+  .ftbl td { white-space: nowrap; min-width: 0; }
+  .ftbl td.tk { font-size: 11.5px; }
+  .ftbl tfoot td { background: #f3f5f8; }
+  .f-total { text-align: right; font-size: 16px; padding: 10px 4px; }
+  .fform { padding: 16px; margin-bottom: 16px; background: #f8fafc; border: 1px solid var(--border); }
+  .fgrid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 0 12px; margin-top: 8px; }
+  .ftk { margin: 6px 0 12px; }
+  .tkrow { display: flex; gap: 6px; margin: 6px 0; max-width: 420px; }
+  #toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #111827; color: #fff; padding: 10px 16px; border-radius: 6px; z-index: 4000; font-size: 13px; box-shadow: 0 4px 14px rgba(0,0,0,.3); }
+
   /* ---- Rapports (anciens écrans) ---- */
   #report { position: absolute; inset: 0; overflow: auto; padding: 20px 24px; background: #fff; z-index: 1100; }
   #report h2 { margin: 0 0 12px; font-size: 20px; color: var(--accent-dark); }
@@ -285,6 +334,10 @@
   #login .lg-support { position: fixed; left: 12px; bottom: 12px; color: #fff; font-weight: 700; font-size: 16px; text-decoration: none; }
   #login .lg-support:hover { text-decoration: underline; }
 
+  @media print {
+    #rail, #side, #sideToggle, .rep-ctrl, #mapwrap, #trips { display: none !important; }
+    body { display: block; overflow: visible; } #main { display: block; } .fp { position: static; overflow: visible; padding: 0; }
+  }
   @media (max-width: 760px) {
     body { flex-direction: column; overflow: auto; }
     #rail { width: 100%; height: 52px; flex-direction: row; justify-content: flex-start; padding: 0 4px; border-right: 0; border-bottom: 1px solid var(--border); }
@@ -305,7 +358,10 @@
   <button class="rb on" data-tab="live"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/><path d="M3.5 9.5 2 8M20.5 9.5 22 8"/></svg><span class="tip">Temps réel</span></button>
   <button class="rb" data-tab="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/><path d="M12 8v4l3 2"/></svg><span class="tip">Rejouer un trajet</span></button>
   <button class="rb" data-tab="circ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="5" cy="18" r="2.2"/><circle cx="19" cy="6" r="2.2"/><path d="M7 18h7a3.5 3.5 0 0 0 0-7H10a3.5 3.5 0 0 1 0-7h7"/></svg><span class="tip">Circuits – taux de réalisation</span></button>
-  <button class="rb" data-tab="rep"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M4 20V4M4 20h16"/><path d="M7 16l4-5 3 3 5-7"/></svg><span class="tip">Rapports & planning</span></button>
+  <button class="rb" data-tab="data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><path d="M15.5 15.5 21 21"/><text x="10" y="12.5" font-size="6.5" text-anchor="middle" fill="currentColor" stroke="none" font-family="Arial" font-weight="700">01</text></svg><span class="tip">Module Data</span></button>
+  <button class="rb" data-tab="kpi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span class="tip">Rapport circuits</span></button>
+  <button class="rb" data-tab="fdr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2.8h6V4M8.5 10h7M8.5 14h7M8.5 18h4"/></svg><span class="tip">Feuille de route</span></button>
+  <button class="rb" data-tab="rep"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M7 14h3M7 17h3M13 14h4"/></svg><span class="tip">Résultats & planning</span></button>
   <div class="rail-sp"></div>
   <span id="live" class="live-dot" title="Connexion…"></span>
   <button class="rb" id="logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v9"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg><span class="tip" id="userMail">Déconnexion</span></button>
@@ -413,6 +469,34 @@
     </div>
   </div>
 
+  <div class="fp" id="dataPanel" hidden>
+    <h2>Module Data</h2>
+    <div class="rep-ctrl"><div class="dfield" id="mdDate"></div><button class="btn" id="mdGo">Valider</button><button class="btn2" id="mdCalc">Calculer maintenant</button></div>
+    <div class="mtabs"><button class="on" data-m="exec">Exécution circuit</button><button data-m="act">Activité véhicule</button></div>
+    <div id="mdExec"></div><div id="mdAct" hidden></div>
+  </div>
+
+  <div class="fp" id="kpiPanel" hidden>
+    <h2>Rapport circuits</h2>
+    <div class="rep-ctrl"><div class="dfield" id="kpDate"></div><button class="btn" id="kpGo">Afficher</button><button class="btn2" id="kpCalc">Calculer maintenant</button><button class="btn2" id="kpPrint">Imprimer / PDF</button></div>
+    <div class="kcards" id="kpCards"></div>
+    <div id="kpBody"></div>
+  </div>
+
+  <div class="fp" id="fdrPanel" hidden>
+    <h2>Feuille de route</h2>
+    <div class="rep-ctrl">
+      <label>Date<input type="date" id="fJour"></label>
+      <label>Arrondissement<select id="fArr"><option value="">Tous</option></select></label>
+      <button class="btn" id="fAdd">+ Ajouter une ligne</button>
+      <button class="btn2" id="fDup">Copier la veille</button>
+      <button class="btn2" id="fImp">Importer Excel</button><input type="file" id="fFile" accept=".xlsx,.xls" hidden>
+    </div>
+    <div class="kpis" id="fKpis"></div>
+    <div id="fForm"></div>
+    <div id="fBody"></div>
+  </div>
+
   <div id="report" hidden>
     <h2>Taux de réalisation des circuits</h2>
     <div class="rep-ctrl">
@@ -455,6 +539,7 @@
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script>
 // ======= CONFIGURATION =======
 const SUPABASE_URL = 'https://zhhpkuxkqzxttdaqwpyx.supabase.co';
@@ -1748,6 +1833,511 @@ function planForm(p) {
   };
 }
 
+
+// =====================================================================
+//  Tableau générique : filtres par colonne, tri, pagination, export Excel
+// =====================================================================
+class Grid {
+  constructor(el, cols, o = {}) {
+    this.el = el; this.cols = cols; this.o = o;
+    this.rows = []; this.page = 0; this.per = o.per || 100; this.sort = null; this.dir = 1; this.flt = {};
+  }
+  val(c, r) { const v = c.v ? c.v(r) : c.f(r); return v === null || v === undefined ? '' : v; }
+  txt(c, r) { const v = c.f(r); return v === null || v === undefined ? '' : String(v); }
+  filtered() {
+    let rows = this.rows.filter((r) => this.cols.every((c) => !this.flt[c.k] || this.txt(c, r).toLowerCase().includes(this.flt[c.k].toLowerCase())));
+    if (this.sort) {
+      const c = this.cols.find((x) => x.k === this.sort);
+      rows = rows.slice().sort((a, b) => { const x = this.val(c, a), y = this.val(c, b);
+        return (typeof x === 'number' && typeof y === 'number' ? x - y : String(x).localeCompare(String(y), 'fr', { numeric: true })) * this.dir; });
+    }
+    return rows;
+  }
+  setRows(rows) { this.rows = rows; this.page = 0; this.render(); }
+  render() {
+    const rows = this.filtered();
+    const pages = Math.max(1, Math.ceil(rows.length / this.per));
+    this.page = Math.min(this.page, pages - 1);
+    const slice = rows.slice(this.page * this.per, this.page * this.per + this.per);
+    const groups = [];
+    this.cols.forEach((c) => { const g = c.grp || ''; const l = groups[groups.length - 1]; if (l && l.g === g) l.n++; else groups.push({ g, n: 1 }); });
+    const hasGrp = groups.some((g) => g.g);
+    if (!this.el.querySelector('table')) {
+      this.el.innerHTML = `<div class="gw"><table class="gtbl dgrid"><thead>
+        ${hasGrp ? `<tr class="grp">${groups.map((g) => `<th colspan="${g.n}" class="${g.g ? 'g' : ''}">${esc(g.g)}</th>`).join('')}</tr>` : ''}
+        <tr class="hd">${this.cols.map((c) => `<th data-s="${c.k}" title="Trier">${esc(c.h)} <span class="si"></span></th>`).join('')}</tr>
+        <tr class="flt">${this.cols.map((c) => `<th><input data-f="${c.k}" placeholder="🔍"></th>`).join('')}</tr></thead><tbody></tbody>
+        ${this.o.total ? '<tfoot></tfoot>' : ''}</table></div>
+        <div class="tr-foot"><button class="ibtn" data-x="csv" title="Exporter vers Excel"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6"/><path d="M9 12l5 6M14 12l-5 6"/></svg></button>
+        <span class="gi"></span><select class="gp"><option>25</option><option>50</option><option selected>100</option><option>500</option></select> Lignes par page
+        <span class="sp"></span><span class="pager"><button data-x="prev">Précédent</button><b class="pg">1</b><button data-x="next">Suivant</button></span></div>`;
+      this.el.querySelectorAll('input[data-f]').forEach((i) => i.oninput = () => { this.flt[i.dataset.f] = i.value; this.page = 0; this.render(); });
+      this.el.querySelectorAll('th[data-s]').forEach((th) => th.onclick = () => {
+        const k = th.dataset.s; if (this.sort === k) this.dir = -this.dir; else { this.sort = k; this.dir = 1; } this.render();
+      });
+      this.el.querySelector('.gp').value = String(this.per);
+      this.el.querySelector('.gp').onchange = (e) => { this.per = +e.target.value; this.page = 0; this.render(); };
+      this.el.querySelector('[data-x=prev]').onclick = () => { this.page--; this.render(); };
+      this.el.querySelector('[data-x=next]').onclick = () => { this.page++; this.render(); };
+      this.el.querySelector('[data-x=csv]').onclick = () => this.exportCsv();
+    }
+    this.el.querySelectorAll('th[data-s] .si').forEach((s) => { s.textContent = s.parentElement.dataset.s === this.sort ? (this.dir > 0 ? '▲' : '▼') : ''; });
+    this.el.querySelector('tbody').innerHTML = slice.length ? slice.map((r) => `<tr${this.o.rowClick ? ' class="click"' : ''}>${this.cols.map((c) => `<td class="${c.cls || ''}"${c.style ? ` style="${c.style(r)}"` : ''}>${c.html ? c.html(r) : esc(this.txt(c, r))}</td>`).join('')}</tr>`).join('')
+      : `<tr><td colspan="${this.cols.length}" class="empty">Aucune ligne à afficher</td></tr>`;
+    if (this.o.rowClick) this.el.querySelectorAll('tbody tr.click').forEach((tr, i) => tr.onclick = () => this.o.rowClick(slice[i]));
+    if (this.o.total) this.el.querySelector('tfoot').innerHTML = `<tr>${this.cols.map((c) => `<td>${c.tot ? esc(c.tot(rows)) : ''}</td>`).join('')}</tr>`;
+    this.el.querySelector('.gi').textContent = rows.length ? `Affichage de l'élément ${this.page * this.per + 1} à ${Math.min(rows.length, this.page * this.per + this.per)} sur ${rows.length} éléments` : '0 élément';
+    this.el.querySelector('.pg').textContent = this.page + 1;
+    this.el.querySelector('[data-x=prev]').disabled = this.page === 0;
+    this.el.querySelector('[data-x=next]').disabled = this.page >= pages - 1;
+  }
+  exportCsv() {
+    const rows = this.filtered();
+    const head = this.cols.map((c) => (c.grp ? `${c.grp} – ${c.h}` : c.h));
+    const lines = rows.map((r) => this.cols.map((c) => { const v = this.txt(c, r); return /^-?\d+\.\d+$/.test(v) ? v.replace('.', ',') : v; }));
+    const csv = '﻿' + [head, ...lines].map((l) => l.map((v) => `"${String(v).replace(/"/g, '""')}"`).join(';')).join('\r\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    a.download = (this.o.file || 'export') + '.csv';
+    a.click();
+  }
+}
+
+// ---------- utilitaires communs ----------
+const hm = (t) => (t ? String(t).slice(0, 5) : '');
+const ampTxt = (a, b) => { if (!a || !b) return ''; const s = Math.max(0, (new Date(b) - new Date(a)) / 1000); return `${pad2(Math.floor(s / 3600))}h${pad2(Math.floor(s % 3600 / 60))}`; };
+const durHM = (sec) => (sec === null || sec === undefined ? '' : `${pad2(Math.floor(sec / 3600))}:${pad2(Math.floor(sec % 3600 / 60))}`);
+const num = (v, d = 2) => (v === null || v === undefined || v === '' ? '' : Number(v).toFixed(d));
+const normParc = (s) => String(s || '').replace(/[\s\-_.]+/g, '').toUpperCase();
+function deviceByParc(txt) {
+  const n = normParc(txt); if (!n) return null;
+  for (const d of devices.values()) if (normParc(d.name) === n || normParc(d.plate) === n || d.imei === txt) return d;
+  return null;
+}
+function rowStatus(r, now = new Date()) {
+  if (r.debut && now < new Date(r.debut)) return 'attente';
+  if (r.fin && now <= new Date(r.fin)) return 'encours';
+  return Number(r.taux || 0) > 0 ? 'termine' : 'nonexec';
+}
+const ST_LBL = { attente: ['En attente de démarrage', '#64748b'], encours: ['En cours', '#2f6fbf'], termine: ['Terminé', '#16a34a'], nonexec: ['Non exécuté', '#BD171E'] };
+async function fetchRealisations(pick) {
+  const v = pick.val; if (!v) return [];
+  let q = sb.from('realisations_full').select('*');
+  q = v.mode === 'periode' && !v.daily ? q.gte('jour', v.days[0]).lte('jour', v.days[v.days.length - 1]) : q.in('jour', v.days);
+  const { data, error } = await q.order('jour', { ascending: false }).order('circuit_code');
+  if (error) { showErr('Erreur : ' + error.message + (/realisations_full/.test(error.message) ? ' (as-tu exécuté feuilles_v9.sql ?)' : '')); return []; }
+  return data;
+}
+
+// =====================================================================
+//  MODULE DATA
+// =====================================================================
+const dataPick = new DatePick($('mdDate'), { allowEmpty: false, value: (() => { const y = new Date(); y.setDate(y.getDate() - 1); return DatePick.day(isoDay(y)); })() });
+const execGrid = new Grid($('mdExec'), [
+  { k: 'jour', h: 'Jour', grp: 'Infos générales', f: (r) => fDay(r.jour), v: (r) => r.jour },
+  { k: 'circ', h: 'Circuit', grp: 'Infos générales', f: (r) => r.circuit_code },
+  { k: 'veh', h: 'Véhicule', grp: 'Infos générales', f: (r) => r.vehicule || r.plate || r.imei },
+  { k: 'cat', h: 'Catégorie', grp: 'Infos générales', f: (r) => r.categorie || '' },
+  { k: 'shift', h: 'Shift', grp: 'Infos générales', f: (r) => r.shift || '' },
+  { k: 'pdeb', h: 'Début', grp: 'Planning', f: (r) => (r.debut ? fmtDT(r.debut) : ''), v: (r) => r.debut || '' },
+  { k: 'pfin', h: 'Fin', grp: 'Planning', f: (r) => (r.fin ? fmtDT(r.fin) : ''), v: (r) => r.fin || '' },
+  { k: 'pamp', h: 'Amp.', grp: 'Planning', f: (r) => ampTxt(r.debut, r.fin) },
+  { k: 'km', h: 'Km', grp: 'Planning', f: (r) => num(r.km_total), v: (r) => Number(r.km_total || 0) },
+  { k: 'vit', h: 'Vit. (km/h)', grp: 'Planning', f: (r) => num(r.vitesse_moy), v: (r) => Number(r.vitesse_moy || 0) },
+  { k: 'rdeb', h: 'Début', grp: 'Circuit réalisé', f: (r) => (r.t_debut ? fmtDT(r.t_debut) : ''), v: (r) => r.t_debut || '' },
+  { k: 'rfin', h: 'Fin', grp: 'Circuit réalisé', f: (r) => (r.t_fin ? fmtDT(r.t_fin) : ''), v: (r) => r.t_fin || '' },
+  { k: 'ramp', h: 'Amp.', grp: 'Circuit réalisé', f: (r) => ampTxt(r.t_debut, r.t_fin) || '00h00' },
+  { k: 'lth', h: 'Lg. th. (km)', grp: 'Circuit réalisé', f: (r) => num(r.longueur_m / 1000), v: (r) => Number(r.longueur_m || 0) },
+  { k: 'lre', h: 'Lg. réal. (km)', grp: 'Circuit réalisé', f: (r) => num(r.realise_m / 1000), v: (r) => Number(r.realise_m || 0) },
+  { k: 'tx', h: 'Tx réal. (%)', grp: 'Circuit réalisé', f: (r) => num(r.taux), v: (r) => Number(r.taux || 0),
+    html: (r) => `<b style="color:${tauxCol(Number(r.taux || 0), r.seuil)}">${num(r.taux)}</b>` },
+  { k: 'st', h: 'Statut', grp: 'Circuit réalisé', f: (r) => ST_LBL[rowStatus(r)][0],
+    html: (r) => { const s = ST_LBL[rowStatus(r)]; return `<span class="badge" style="background:${s[1]}">${s[0]}</span>`; } },
+  { k: 'adur', h: 'Durée', grp: 'Arrêts', f: (r) => durHM(r.duree_arrets_s), v: (r) => Number(r.duree_arrets_s || 0) },
+  { k: 'anb', h: 'Nb.', grp: 'Arrêts', f: (r) => (r.nb_arrets ?? ''), v: (r) => Number(r.nb_arrets || 0) },
+  { k: 'chf', h: 'Chauffeur', grp: 'Feuille de route', f: (r) => r.chauffeurs || '' },
+  { k: 'ton', h: 'Tonnage (t)', grp: 'Feuille de route', f: (r) => (r.nb_feuilles ? num(r.tonnage_kg / 1000) : ''), v: (r) => Number(r.tonnage_kg || 0) },
+  { k: 'kgkm', h: 'kg / km réal.', grp: 'Feuille de route', f: (r) => (r.nb_feuilles && r.realise_m > 0 ? num(r.tonnage_kg / (r.realise_m / 1000), 0) : ''), v: (r) => (r.realise_m > 0 ? r.tonnage_kg / r.realise_m : 0) },
+  { k: 'tick', h: 'Tickets', grp: 'Feuille de route', f: (r) => r.tickets || '' },
+  { k: 'cons', h: 'Date conso.', grp: '', f: (r) => (r.calcule_le ? fmtDT(r.calcule_le) : ''), v: (r) => r.calcule_le || '' },
+], { file: 'execution_circuits', rowClick: (r) => openInCircuits(r) });
+const actGrid = new Grid($('mdAct'), [
+  { k: 'veh', h: 'Véhicule', f: (r) => label(r.d) },
+  { k: 'lot', h: 'Lot', f: (r) => lotOf(r.d) },
+  { k: 'cat', h: 'Catégorie', f: (r) => catOf(r.d) },
+  { k: 'imei', h: 'IMEI', f: (r) => r.d.imei },
+  { k: 'pre', h: 'Premier signal', f: (r) => (r.a ? fmtDT(r.a.premier) : ''), v: (r) => (r.a ? r.a.premier : '') },
+  { k: 'der', h: 'Dernier signal', f: (r) => (r.a ? fmtDT(r.a.dernier) : ''), v: (r) => (r.a ? r.a.dernier : '') },
+  { k: 'km', h: 'Km parcourus', f: (r) => (r.a ? num(r.a.km) : '0.00'), v: (r) => (r.a ? Number(r.a.km) : 0) },
+  { k: 'vmax', h: 'Vit. max (km/h)', f: (r) => (r.a ? r.a.vmax : ''), v: (r) => (r.a ? r.a.vmax : 0) },
+  { k: 'pts', h: 'Nb. points', f: (r) => (r.a ? r.a.nb_points : 0), v: (r) => (r.a ? Number(r.a.nb_points) : 0) },
+  { k: 'etat', h: 'Activité', f: (r) => (r.a && Number(r.a.km) > 0 ? 'Actif' : 'Sans activité'),
+    html: (r) => (r.a && Number(r.a.km) > 0 ? '<span class="badge" style="background:#16a34a">Actif</span>' : '<span class="badge" style="background:#9ca3af">Sans activité</span>') },
+], { file: 'activite_vehicules', rowClick: (r) => { openDetail(r.d.imei); detPick.set(JSON.parse(JSON.stringify(dataPick.val))); loadDetTrips(); } });
+let mdTab = 'exec';
+async function loadData() {
+  if (mdTab === 'exec') {
+    $('mdExec').querySelector('tbody') && ($('mdExec').querySelector('tbody').innerHTML = '<tr><td class="empty" colspan="30">Chargement…</td></tr>');
+    execGrid.setRows(await fetchRealisations(dataPick));
+  } else {
+    const iv = dataPick.intervals().map(([a, b]) => [a.toISOString(), b.toISOString()]);
+    const { data, error } = await sb.rpc('activite_vehicules', { p_intervals: iv });
+    if (error) return showErr(error.message);
+    const m = new Map(data.map((a) => [a.imei, a]));
+    actGrid.setRows([...devices.values()].map((d) => ({ d, a: m.get(d.imei) })));
+  }
+}
+
+// =====================================================================
+//  RAPPORT CIRCUITS (indicateurs)
+// =====================================================================
+const kpiPick = new DatePick($('kpDate'), { allowEmpty: false, value: (() => { const y = new Date(); y.setDate(y.getDate() - 1); return DatePick.day(isoDay(y)); })() });
+let kpiRows = [];
+const BUCKETS = [['95–100%', (t) => t >= 95, '#14532d', '#bbf7d0'], ['90–95%', (t) => t >= 90 && t < 95, '#3f6212', '#d9f99d'],
+  ['80–90%', (t) => t >= 80 && t < 90, '#713f12', '#fef08a'], ['70–80%', (t) => t >= 70 && t < 80, '#7c2d12', '#fed7aa'],
+  ['<70%', (t) => t > 0 && t < 70, '#7f1d1d', '#fecaca'], ['=0%', (t) => t === 0, '#ffffff', '#BD171E']];
+function kpiStats(rows, now = new Date()) {
+  const s = { plan: rows.length, termine: 0, encours: 0, nonexec: 0, attente: 0, b: BUCKETS.map(() => 0), q: [], ton: 0, app: 0 };
+  rows.forEach((r) => {
+    const st = rowStatus(r, now); s[st]++;
+    const t = Number(r.taux || 0);
+    if (st !== 'attente') BUCKETS.forEach(([, f], i) => { if (f(t)) s.b[i]++; });
+    if (t > 0) s.q.push(t);
+    if (r.nb_feuilles) { s.app++; s.ton += Number(r.tonnage_kg || 0); }
+  });
+  s.exec = s.plan ? 100 * s.termine / s.plan : 0;
+  s.qual = s.q.length ? s.q.reduce((a, b) => a + b, 0) / s.q.length : 0;
+  return s;
+}
+async function loadKpi() {
+  $('kpBody').innerHTML = '<p class="msg">Chargement…</p>';
+  kpiRows = await fetchRealisations(kpiPick);
+  const all = kpiStats(kpiRows);
+  $('kpCards').innerHTML = `
+    <div class="kc"><small>PLANIFIÉ</small><b>${all.plan}</b><span>circuits planifiés</span></div>
+    <div class="kc"><small>TAUX D'EXÉCUTION</small><b style="color:${all.exec >= 95 ? '#16a34a' : all.exec >= 80 ? '#f59e0b' : '#BD171E'}">${all.exec.toFixed(1).replace('.0', '')} %</b><span>${all.termine} terminés / ${all.plan} planifiés</span></div>
+    <div class="kc"><small>TAUX DE QUALITÉ</small><b style="color:#2f6fbf">${all.qual.toFixed(1).replace('.', ',')} %</b><span>moyenne des taux réalisés</span></div>
+    <div class="kc"><small>NON EXÉCUTÉS</small><b style="color:${all.nonexec ? '#BD171E' : '#16a34a'}">${all.nonexec}</b><span>${all.plan ? (100 * all.nonexec / all.plan).toFixed(0) : 0} % des circuits</span></div>
+    <div class="kc"><small>TONNAGE COLLECTÉ</small><b>${(all.ton / 1000).toFixed(2).replace('.', ',')} t</b><span>${all.app} / ${all.plan} circuits appariés</span></div>`;
+  if (!kpiRows.length) { $('kpBody').innerHTML = '<p class="msg">Aucun circuit calculé sur cette période. Clique sur « Calculer maintenant ».</p>'; return; }
+  const groups = {};
+  kpiRows.forEach((r) => { const g = r.shift || 'Sans shift'; (groups[g] = groups[g] || []).push(r); });
+  const v = kpiPick.val;
+  const per = v.days.length === 1 ? fDay(v.days[0]) : `${fDay(v.days[0])} → ${fDay(v.days[v.days.length - 1])}`;
+  $('kpBody').innerHTML = Object.keys(groups).sort().map((g) => {
+    const rs = groups[g], s = kpiStats(rs);
+    const det = rs.slice().sort((a, b) => a.circuit_code.localeCompare(b.circuit_code, 'fr', { numeric: true }));
+    return `<div class="kb">
+      <div class="kb-h"><span class="kb-logo">SOS</span><b>Collecte ${esc(g.toUpperCase())}</b><span class="sp"></span><span>${per}</span></div>
+      <div class="gw"><table class="ktbl"><thead>
+        <tr class="grp"><th></th><th colspan="5">EXÉCUTION DES CIRCUITS</th><th colspan="6">TAUX DE CONFORMITÉ</th><th colspan="2">QUALITÉ DE PRESTATION</th><th>TONNAGE</th></tr>
+        <tr><th>Ensemble des circuits</th><th>Planifié</th><th>Terminés – Fin planning</th><th>En cours</th><th>Non exécuté</th><th>En attente de démarrage</th>
+          ${BUCKETS.map(([l]) => `<th>${l}</th>`).join('')}<th>Taux d'exécution</th><th>Taux de qualité</th><th>Tonnage (t)</th></tr></thead>
+        <tbody><tr><td><b>Total</b></td><td>${s.plan}</td><td class="c-ok">${s.termine}</td><td class="c-run">${s.encours}</td><td class="c-ko">${s.nonexec}</td><td class="c-wait">${s.attente}</td>
+          ${s.b.map((n, i) => `<td style="background:${BUCKETS[i][3]};color:${BUCKETS[i][2]}">${n}</td>`).join('')}
+          <td class="c-ok"><b>${s.exec.toFixed(0)}%</b></td><td class="c-q"><b>${s.qual.toFixed(1).replace('.', ',')}%</b></td><td><b>${(s.ton / 1000).toFixed(2).replace('.', ',')}</b></td></tr></tbody></table></div>
+      <details><summary>Détail par circuit ( ${rs.length} )</summary>
+        <div class="gw"><table class="tbl"><thead><tr><th>Jour</th><th>Circuit</th><th>Véhicule</th><th>Horaires</th><th>Statut</th><th>Lg. réal. / th. (km)</th><th>Taux</th><th>Tonnage (t)</th><th>kg / km</th><th>Chauffeur</th></tr></thead>
+        <tbody>${det.map((r, i) => { const st = ST_LBL[rowStatus(r)]; const t = Number(r.taux || 0);
+          return `<tr class="click" data-g="${esc(g)}" data-i="${i}"><td>${fDay(r.jour)}</td><td><b>${esc(r.circuit_code)}</b></td><td>${esc(r.vehicule || r.imei)}</td><td>${hm(r.heure_debut)}–${hm(r.heure_fin)}</td>
+            <td><span class="badge" style="background:${st[1]}">${st[0]}</span></td><td>${num(r.realise_m / 1000)} / ${num(r.longueur_m / 1000)}</td>
+            <td><span class="mini"><i style="width:${t}%;background:${tauxCol(t, r.seuil)}"></i></span><b style="color:${tauxCol(t, r.seuil)}">${num(t, 1)} %</b></td>
+            <td>${r.nb_feuilles ? num(r.tonnage_kg / 1000) : '<small class="msg">non apparié</small>'}</td><td>${r.nb_feuilles && r.realise_m > 0 ? num(r.tonnage_kg / (r.realise_m / 1000), 0) : ''}</td><td>${esc(r.chauffeurs || '')}</td></tr>`; }).join('')}</tbody></table></div>
+      </details>
+      <details><summary>Paramètres de calcul</summary><div class="msg" style="line-height:1.6">
+        • <b>Terminé</b> : la fin de la plage planifiée est passée et le taux est &gt; 0 %. <b>Non exécuté</b> : plage passée, 0 %.
+          <b>En cours</b> : nous sommes dans la plage. <b>En attente</b> : la plage n'a pas commencé.<br>
+        • <b>Taux d'exécution</b> = terminés ÷ planifiés. <b>Taux de qualité</b> = moyenne des taux de réalisation des circuits exécutés.<br>
+        • <b>Taux de réalisation</b> d'un circuit = longueur parcourue à moins de la tolérance (20 m par défaut) ÷ longueur théorique.<br>
+        • <b>Tonnage</b> = somme des tickets des feuilles de route liées au circuit (même jour, même circuit, même véhicule). <b>Apparié</b> = au moins une feuille de route liée.
+      </div></details></div>`;
+  }).join('');
+  $('kpBody').querySelectorAll('tr.click').forEach((tr) => tr.onclick = () => {
+    const rs = groups[tr.dataset.g].slice().sort((a, b) => a.circuit_code.localeCompare(b.circuit_code, 'fr', { numeric: true }));
+    openInCircuits(rs[+tr.dataset.i]);
+  });
+}
+async function recalcPick(pick, after) {
+  const days = pick.val.days.length > 1 && pick.val.mode === 'periode' && !pick.val.daily ? daysBetween(pick.val.days[0], pick.val.days[pick.val.days.length - 1]) : pick.val.days;
+  for (let i = 0; i < days.length; i++) {
+    showToast(`Calcul du ${fDay(days[i])} (${i + 1}/${days.length})…`);
+    const { error } = await sb.rpc('calculer_realisations', { p_date: days[i] });
+    if (error) { showErr('Erreur calcul : ' + error.message); break; }
+  }
+  showToast('Calcul terminé.', 2000);
+  after();
+}
+function showToast(t, ms) {
+  let el = $('toast'); if (!el) { el = document.createElement('div'); el.id = 'toast'; document.body.appendChild(el); }
+  el.textContent = t; el.hidden = false; clearTimeout(el._t); if (ms) el._t = setTimeout(() => { el.hidden = true; }, ms);
+}
+
+// =====================================================================
+//  FEUILLE DE ROUTE
+// =====================================================================
+let fdrRows = [];
+const TYPES_COLLECTE = ['Collecte OM Jour', 'Collecte OM Nuit', 'Collecte Déchets Verts et Gravats', 'Lavage des conteneurs', 'Intervention', 'Renfort'];
+const LIEUX = ['Centre Akreuch', 'Caissons Métalliques', 'TRANSFER'];
+const tonKg = (f) => (f.tickets || []).reduce((a, t) => a + (Number(t.kg) || 0), 0);
+function hhmmDiff(a, b) { if (!a || !b) return ''; const [h1, m1] = a.split(':').map(Number), [h2, m2] = b.split(':').map(Number); let d = h2 * 60 + m2 - (h1 * 60 + m1); if (d < 0) d += 1440; return `${Math.floor(d / 60)}h${pad2(d % 60)}`; }
+async function suggestCircuit(imei, jour, hdep) {
+  if (!imei || !jour) return null;
+  if (!livePlans.length) { const { data } = await sb.from('planning_list').select('*').eq('actif', true); livePlans = data || []; }
+  const dow = DOW[new Date(jour + 'T12:00').getDay()];
+  const c = livePlans.filter((p) => p.imei === imei && p[dow]);
+  if (!c.length) return null;
+  const mins = (t) => { const [h, m] = String(t || '00:00').split(':').map(Number); return h * 60 + m; };
+  c.sort((a, b) => Math.abs(mins(a.heure_debut) - mins(hdep)) - Math.abs(mins(b.heure_debut) - mins(hdep)));
+  return c[0].circuit_code;
+}
+async function loadFdr() {
+  const jour = $('fJour').value;
+  $('fBody').innerHTML = '<p class="msg">Chargement…</p>';
+  const { data, error } = await sb.from('feuilles_list').select('*').eq('jour', jour).order('arrondissement').order('type_collecte').order('heure_depart').order('id');
+  if (error) { $('fBody').innerHTML = ''; return showErr('Feuilles de route : ' + error.message + (/feuilles/.test(error.message) ? ' (as-tu exécuté feuilles_v9.sql ?)' : '')); }
+  fdrRows = data;
+  const arrs = [...new Set(data.map((f) => f.arrondissement || ''))].filter(Boolean).sort();
+  const cur = $('fArr').value;
+  $('fArr').innerHTML = '<option value="">Tous</option>' + arrs.map((a) => `<option${a === cur ? ' selected' : ''}>${esc(a)}</option>`).join('');
+  renderFdr();
+}
+function renderFdr() {
+  const arr = $('fArr').value;
+  const rows = fdrRows.filter((f) => !arr || f.arrondissement === arr);
+  const tot = rows.reduce((a, f) => a + tonKg(f), 0), km = rows.reduce((a, f) => a + (f.km_parcouru > 0 && f.km_parcouru <= 400 ? Number(f.km_parcouru) : 0), 0);
+  const linked = rows.filter((f) => f.circuit_code).length;
+  $('fKpis').innerHTML = `<div class="stat"><b>${(tot / 1000).toFixed(2)} t</b><small>Tonnage total</small></div>
+    <div class="stat"><b>${rows.length}</b><small>Lignes saisies</small></div>
+    <div class="stat"><b>${km.toFixed(0)} km</b><small>Km compteur parcourus</small></div>
+    <div class="stat"><b>${linked} / ${rows.length}</b><small>Lignes liées à un circuit</small></div>
+    <div class="stat"><b>${km ? (tot / km).toFixed(0) : 0}</b><small>kg / km compteur</small></div>`;
+  if (!rows.length) { $('fBody').innerHTML = '<p class="msg">Aucune feuille de route saisie pour cette date. Ajoute une ligne, copie la veille ou importe ton fichier Excel.</p>'; return; }
+  const groups = {};
+  rows.forEach((f) => { const g = `${f.arrondissement || 'Sans arrondissement'}|||${f.type_collecte || 'Collecte'}`; (groups[g] = groups[g] || []).push(f); });
+  let lastArr = '';
+  $('fBody').innerHTML = Object.keys(groups).map((g) => {
+    const [a, t] = g.split('|||'), rs = groups[g];
+    const gt = rs.reduce((x, f) => x + tonKg(f), 0);
+    const h = a !== lastArr ? `<h3 class="f-arr">Arrondissement ${esc(a)}</h3>` : ''; lastArr = a;
+    return h + `<div class="f-grp"><div class="f-gh">${esc(t)}</div><div class="gw"><table class="gtbl ftbl"><thead><tr>
+      <th>Secteur</th><th>Type véhicule</th><th>N° Parc</th><th>Départ</th><th>Arrivée</th><th>Total</th><th>KM départ</th><th>KM arrivée</th><th>KM parc.</th>
+      <th>Chauffeur</th><th>Agents</th><th>Tours</th><th>Resp. hiér.</th><th>Lieu de vidage</th><th>Tickets (kg)</th><th>Tonnage (t)</th><th>Circuit</th><th>Tx réal.</th><th>kg / km</th><th></th></tr></thead>
+      <tbody>${rs.map((f) => { const kg = tonKg(f), t = f.taux === null || f.taux === undefined ? null : Number(f.taux);
+        return `<tr><td>${esc(f.secteur || '')}</td><td>${esc(f.type_vehicule || f.categorie || '')}</td><td><b>${esc(f.vehicule || f.device_name || '')}</b>${f.imei ? '' : ' <span title="Véhicule non reconnu parmi les boîtiers" class="warn">⚠</span>'}</td>
+          <td>${hm(f.heure_depart)}</td><td>${hm(f.heure_arrivee)}</td><td>${hhmmDiff(hm(f.heure_depart), hm(f.heure_arrivee))}</td>
+          <td>${f.km_depart ?? ''}</td><td>${f.km_arrivee ?? ''}</td><td>${f.km_parcouru ?? ''}${f.km_parcouru !== null && f.km_parcouru !== undefined && (f.km_parcouru < 0 || f.km_parcouru > 400) ? ' <span class="warn" title="Kilométrage incohérent : vérifier KM départ / arrivée">⚠</span>' : ''}</td><td>${esc(f.chauffeur || '')}</td><td>${f.nb_agents ?? ''}</td><td>${f.nb_tours ?? ''}</td>
+          <td>${esc(f.resp_hierarchique || '')}</td><td>${esc(f.lieu_vidage || '')}</td>
+          <td class="tk">${(f.tickets || []).map((x) => `${esc(x.n || '—')} : ${Number(x.kg || 0).toLocaleString('fr-FR')}`).join('<br>') || '<small class="msg">sans ticket</small>'}</td>
+          <td><b>${(kg / 1000).toFixed(2)}</b></td><td>${f.circuit_code ? `<b>${esc(f.circuit_code)}</b>` : '<small class="msg">non lié</small>'}</td>
+          <td>${t === null ? '' : `<b style="color:${tauxCol(t, f.seuil)}">${t.toFixed(1)} %</b>`}</td>
+          <td>${f.km_parcouru > 0 ? (kg / f.km_parcouru).toFixed(0) : ''}</td>
+          <td style="white-space:nowrap"><button class="ibtn" data-ed="${f.id}" title="Modifier">✎</button><button class="ibtn" data-del="${f.id}" title="Supprimer" style="color:#BD171E">🗑</button></td></tr>`; }).join('')}</tbody>
+      <tfoot><tr><td colspan="15"><b>TOTAL</b></td><td><b>${(gt / 1000).toFixed(2)}</b></td><td colspan="4"></td></tr></tfoot></table></div></div>`;
+  }).join('') + `<div class="f-total">TOTAL GÉNÉRAL : <b>${(tot / 1000).toFixed(2)} t</b></div>`;
+  $('fBody').querySelectorAll('[data-ed]').forEach((b) => b.onclick = () => fdrForm(fdrRows.find((f) => f.id === +b.dataset.ed)));
+  $('fBody').querySelectorAll('[data-del]').forEach((b) => b.onclick = async () => {
+    if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = 'Confirmer ?'; setTimeout(() => { b.dataset.sure = ''; b.textContent = '🗑'; }, 3000); return; }
+    const { error } = await sb.from('feuilles_route').delete().eq('id', +b.dataset.del);
+    if (error) return showErr(error.message);
+    loadFdr();
+  });
+}
+function fdrForm(f) {
+  const n = !f;
+  const last = fdrRows[fdrRows.length - 1] || {};
+  f = f || { jour: $('fJour').value, exploitation: last.exploitation || '', arrondissement: $('fArr').value || last.arrondissement || '',
+    type_collecte: last.type_collecte || 'Collecte OM Jour', lieu_vidage: last.lieu_vidage || 'Centre Akreuch', nb_agents: 2, nb_tours: 1, tickets: [{ n: '', kg: '' }] };
+  const tickets = (f.tickets && f.tickets.length ? f.tickets : [{ n: '', kg: '' }]).map((t) => ({ ...t }));
+  const arrs = [...new Set(fdrRows.map((x) => x.arrondissement).filter(Boolean))];
+  const circOpts = [...circuits.values()].map((c) => `<option value="${esc(c.code)}"${c.code === f.circuit_code ? ' selected' : ''}>${esc(c.code)}${c.name && c.name !== c.code ? ' — ' + esc(c.name) : ''}</option>`).join('');
+  $('fForm').innerHTML = `<div class="stat fform">
+    <b style="font-size:16px;margin-bottom:10px">${n ? 'Nouvelle ligne de feuille de route' : 'Modifier la ligne'} — ${fDay(f.jour)}</b>
+    <datalist id="dlArr">${arrs.map((a) => `<option value="${esc(a)}">`).join('')}</datalist>
+    <datalist id="dlType">${TYPES_COLLECTE.map((a) => `<option value="${esc(a)}">`).join('')}</datalist>
+    <datalist id="dlLieu">${LIEUX.map((a) => `<option value="${esc(a)}">`).join('')}</datalist>
+    <datalist id="dlVeh">${[...devices.values()].map((d) => `<option value="${esc(label(d))}">`).join('')}</datalist>
+    <div class="fgrid">
+      <label>Exploitation<input id="ffExp" value="${esc(f.exploitation || '')}"></label>
+      <label>Arrondissement<input id="ffArr" list="dlArr" value="${esc(f.arrondissement || '')}"></label>
+      <label>Type de collecte<input id="ffType" list="dlType" value="${esc(f.type_collecte || '')}"></label>
+      <label>Secteur<input id="ffSec" value="${esc(f.secteur || '')}"></label>
+      <label>N° de parc / immat.<input id="ffVeh" list="dlVeh" value="${esc(f.vehicule || f.device_name || '')}"><small id="ffVehInfo" class="msg"></small></label>
+      <label>Type véhicule<input id="ffTypeV" value="${esc(f.type_vehicule || '')}" placeholder="BOM 14M3…"></label>
+      <label>Heure départ<input type="time" id="ffHd" value="${hm(f.heure_depart)}"></label>
+      <label>Heure arrivée<input type="time" id="ffHa" value="${hm(f.heure_arrivee)}"></label>
+      <label>KM départ<input type="number" id="ffKd" value="${f.km_depart ?? ''}"></label>
+      <label>KM arrivée<input type="number" id="ffKa" value="${f.km_arrivee ?? ''}"><small id="ffKm" class="msg"></small></label>
+      <label>Chauffeur<input id="ffChf" value="${esc(f.chauffeur || '')}"></label>
+      <label>Nbr agents<input type="number" id="ffAg" value="${f.nb_agents ?? ''}"></label>
+      <label>Nbr tours<input type="number" id="ffTr" value="${f.nb_tours ?? ''}"></label>
+      <label>Resp. hiérarchique<input id="ffResp" value="${esc(f.resp_hierarchique || '')}"></label>
+      <label>Lieu de vidage<input id="ffLieu" list="dlLieu" value="${esc(f.lieu_vidage || '')}"></label>
+      <label>Circuit lié<select id="ffCirc"><option value="">— aucun —</option>${circOpts}</select><small class="msg">proposé selon le planning du véhicule</small></label>
+    </div>
+    <div class="ftk"><b>Tickets de pesée</b><div id="ffTk"></div><button class="btn2" id="ffTkAdd" style="padding:5px 10px">+ Ticket</button> <span id="ffTon" class="msg"></span></div>
+    <label>Observation<input id="ffObs" value="${esc(f.observation || '')}"></label>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" style="width:auto;padding:9px 18px" id="ffSave">Enregistrer</button>
+      ${n ? '<button class="btn2" id="ffSaveNew">Enregistrer et ajouter une autre</button>' : ''}<button class="btn2" id="ffCancel">Annuler</button></div>
+    <div id="ffMsg" class="msg"></div></div>`;
+  const drawTk = () => {
+    $('ffTk').innerHTML = tickets.map((t, i) => `<div class="tkrow"><input placeholder="N° ticket" data-tn="${i}" value="${esc(t.n || '')}"><input type="number" placeholder="Poids (kg)" data-tk="${i}" value="${t.kg ?? ''}"><button class="ibtn" data-tx="${i}" style="color:#BD171E">✕</button></div>`).join('');
+    $('ffTk').querySelectorAll('[data-tn]').forEach((i) => i.oninput = () => { tickets[+i.dataset.tn].n = i.value; });
+    $('ffTk').querySelectorAll('[data-tk]').forEach((i) => i.oninput = () => { tickets[+i.dataset.tk].kg = i.value; upd(); });
+    $('ffTk').querySelectorAll('[data-tx]').forEach((b) => b.onclick = () => { tickets.splice(+b.dataset.tx, 1); drawTk(); upd(); });
+  };
+  const upd = () => {
+    const kg = tickets.reduce((a, t) => a + (Number(t.kg) || 0), 0);
+    $('ffTon').textContent = `Tonnage total : ${(kg / 1000).toFixed(2)} t`;
+    const kd = Number($('ffKd').value), ka = Number($('ffKa').value);
+    $('ffKm').textContent = $('ffKd').value && $('ffKa').value ? `KM parcourus : ${ka - kd}` : '';
+  };
+  const vehChange = async () => {
+    const d = deviceByParc($('ffVeh').value);
+    $('ffVehInfo').innerHTML = d ? `✓ boîtier reconnu (${esc(d.imei)})` : $('ffVeh').value ? '<span class="warn">⚠ non reconnu parmi les boîtiers</span>' : '';
+    if (d && !$('ffTypeV').value && d.categorie) $('ffTypeV').value = d.categorie;
+    if (d && !$('ffCirc').value) { const c = await suggestCircuit(d.imei, f.jour, $('ffHd').value); if (c) $('ffCirc').value = c; }
+  };
+  drawTk(); upd(); vehChange();
+  $('ffTkAdd').onclick = () => { tickets.push({ n: '', kg: '' }); drawTk(); };
+  $('ffKd').oninput = $('ffKa').oninput = upd;
+  $('ffVeh').onchange = vehChange; $('ffHd').onchange = vehChange;
+  $('ffCancel').onclick = () => { $('fForm').innerHTML = ''; };
+  const save = async (again) => {
+    const d = deviceByParc($('ffVeh').value);
+    const body = { jour: f.jour, exploitation: $('ffExp').value || null, arrondissement: $('ffArr').value || null, type_collecte: $('ffType').value || null,
+      secteur: $('ffSec').value || null, vehicule: $('ffVeh').value || null, imei: d ? d.imei : null, type_vehicule: $('ffTypeV').value || null,
+      heure_depart: $('ffHd').value || null, heure_arrivee: $('ffHa').value || null,
+      km_depart: $('ffKd').value === '' ? null : +$('ffKd').value, km_arrivee: $('ffKa').value === '' ? null : +$('ffKa').value,
+      chauffeur: $('ffChf').value || null, nb_agents: $('ffAg').value === '' ? null : +$('ffAg').value, nb_tours: $('ffTr').value === '' ? null : +$('ffTr').value,
+      resp_hierarchique: $('ffResp').value || null, lieu_vidage: $('ffLieu').value || null, circuit_code: $('ffCirc').value || null,
+      tickets: tickets.filter((t) => t.n || t.kg).map((t) => ({ n: String(t.n || '').trim(), kg: Number(t.kg) || 0 })), observation: $('ffObs').value || null };
+    $('ffMsg').textContent = 'Enregistrement…';
+    const { error } = n ? await sb.from('feuilles_route').insert(body) : await sb.from('feuilles_route').update(body).eq('id', f.id);
+    if (error) { $('ffMsg').innerHTML = `<span style="color:#BD171E">${esc(error.message)}</span>`; return; }
+    await loadFdr();
+    if (again) fdrForm(null); else $('fForm').innerHTML = '';
+  };
+  $('ffSave').onclick = () => save(false);
+  if (n) $('ffSaveNew').onclick = () => save(true);
+  $('fForm').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+async function fdrCopyYesterday() {
+  const jour = $('fJour').value;
+  if (fdrRows.length) { showToast('Cette date contient déjà des lignes : la copie n\'est possible que sur une journée vide.', 4000); return; }
+  const y = new Date(jour + 'T12:00'); y.setDate(y.getDate() - 1);
+  const { data, error } = await sb.from('feuilles_route').select('*').eq('jour', isoDay(y));
+  if (error) return showErr(error.message);
+  if (!data.length) { showToast('Aucune ligne la veille.', 3000); return; }
+  const rows = data.map((f) => ({ jour, exploitation: f.exploitation, arrondissement: f.arrondissement, type_collecte: f.type_collecte, secteur: f.secteur,
+    circuit_code: f.circuit_code, imei: f.imei, vehicule: f.vehicule, type_vehicule: f.type_vehicule, heure_depart: f.heure_depart, heure_arrivee: f.heure_arrivee,
+    km_depart: f.km_arrivee, km_arrivee: null, chauffeur: f.chauffeur, nb_agents: f.nb_agents, nb_tours: f.nb_tours,
+    resp_hierarchique: f.resp_hierarchique, lieu_vidage: f.lieu_vidage, tickets: [] }));
+  const { error: e2 } = await sb.from('feuilles_route').insert(rows);
+  if (e2) return showErr(e2.message);
+  showToast(`${rows.length} lignes copiées depuis le ${fDay(isoDay(y))} (KM départ = KM arrivée de la veille, tickets à saisir).`, 5000);
+  loadFdr();
+}
+
+// ---------- Import du fichier Excel « Rapport journalier de collecte » ----------
+function parseCollecteWorkbook(wb) {
+  const out = []; let arr = '', type = '', exp = '', dateTxt = null, map = null;
+  const nt = (v) => String(v ?? '').replace(/\s+/g, ' ').trim();
+  const low = (v) => nt(v).toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const hhmm = (v) => { const m = nt(v).match(/(\d{1,2})\s*[hH:]\s*(\d{2})?/); return m ? `${pad2(+m[1] % 24)}:${m[2] || '00'}` : null; };
+  const numv = (v) => { if (v === null || v === undefined || v === '') return null; const x = Number(String(v).replace(/\s/g, '').replace(',', '.')); return isNaN(x) ? null : x; };
+  for (const name of wb.SheetNames) {
+    const rows = XLSX.utils.sheet_to_json(wb.Sheets[name], { header: 1, defval: null, raw: true });
+    for (const r of rows) {
+      const cells = (r || []).map((c) => (c === null ? null : c));
+      const filled = cells.map((c, i) => [c, i]).filter(([c]) => c !== null && nt(c) !== '');
+      if (!filled.length) continue;
+      const c0 = nt(cells[0]);
+      const l0 = low(cells[0]);
+      if (/^date\s*:/.test(l0)) { const m = c0.match(/(\d{1,2})\/(\d{1,2})\/(\d{4})/); if (m && !dateTxt) dateTxt = `${m[3]}-${pad2(m[2])}-${pad2(m[1])}`; continue; }
+      if (/^exploitation/.test(l0)) { exp = nt(c0.split(':').slice(1).join(':')) || exp; continue; }
+      if (l0 === 'secteur') {
+        map = { tickets: [] };
+        cells.forEach((h, i) => {
+          const x = low(h);
+          if (!x) return;
+          if (x.startsWith('type')) map.type = i;
+          else if (x.startsWith('km') && x.includes('parc')) map.kp = i;
+          else if (x.includes('parc') || x.includes('immat')) map.veh = i;
+          else if (x.includes('depart') && x.includes('horaire')) map.hd = i;
+          else if (x.includes('arrivee') && x.includes('horaire')) map.ha = i;
+          else if (x.includes('km') && x.includes('depart')) map.kd = i;
+          else if (x.includes('km') && x.includes('arrivee')) map.ka = i;
+          else if (x.includes('chauffeur')) map.chf = i;
+          else if (x.includes('agent')) map.ag = i;
+          else if (x.includes('tour')) map.tr = i;
+          else if (x.includes('resp')) map.resp = i;
+          else if (x.includes('vidage')) map.lieu = i;
+          else if (x.includes('ticket')) map.tickets.push([i, null]);
+          else if (x.includes('tonnage') && !x.includes('total')) { const t = map.tickets[map.tickets.length - 1]; if (t && t[1] === null) t[1] = i; }
+        });
+        continue;
+      }
+      if (filled.length === 1 && filled[0][1] === 0) {
+        if (/^(total|incidents|ras|visa|rapport|registre)/.test(l0)) continue;
+        if (/^arrondissement/.test(l0)) arr = c0.replace(/^arrondissement\s*/i, '');
+        else type = c0;
+        continue;
+      }
+      if (/^total/.test(l0) || !map || map.veh === undefined) continue;
+      if (/^(incidents|visa|n° parc|secteur\/)/.test(l0)) { map = l0.startsWith('secteur/') ? null : map; continue; }
+      const veh = nt(cells[map.veh]);
+      if (!veh || !c0) continue;                       // ligne de titre ou vide
+      const tk0 = map.tickets.map(([ti, ki]) => {
+        const n = nt(cells[ti]); let kg = ki === null ? null : numv(cells[ki]);
+        if (kg !== null && kg > 0 && kg < 100) kg = kg * 1000;     // saisi en tonnes
+        return { n: /sans/i.test(n) ? '' : n, kg: kg || 0, sans: /sans/i.test(n) };
+      });
+      const sansTicket = tk0.some((t) => t.sans);
+      const tickets = tk0.filter((t) => t.n || t.kg);
+      out.push({ exploitation: exp || null, arrondissement: arr || null, type_collecte: type || null, secteur: c0 || null,
+        type_vehicule: map.type !== undefined ? nt(cells[map.type]) || null : null, vehicule: veh,
+        heure_depart: map.hd !== undefined ? hhmm(cells[map.hd]) : null, heure_arrivee: map.ha !== undefined ? hhmm(cells[map.ha]) : null,
+        km_depart: map.kd !== undefined ? numv(cells[map.kd]) : null, km_arrivee: map.ka !== undefined ? numv(cells[map.ka]) : null,
+        chauffeur: map.chf !== undefined ? nt(cells[map.chf]) || null : null, nb_agents: map.ag !== undefined ? numv(cells[map.ag]) : null,
+        nb_tours: map.tr !== undefined ? numv(cells[map.tr]) : null, resp_hierarchique: map.resp !== undefined ? nt(cells[map.resp]) || null : null,
+        lieu_vidage: map.lieu !== undefined ? nt(cells[map.lieu]) || null : null,
+        tickets: tickets.map((t) => ({ n: t.n, kg: t.kg })),
+        observation: sansTicket ? 'sans ticket' : null });
+    }
+  }
+  return { rows: out, date: dateTxt };
+}
+async function fdrImport(file) {
+  if (typeof XLSX === 'undefined') return showErr('La bibliothèque de lecture Excel n\'est pas chargée (connexion internet ?).');
+  const wb = XLSX.read(await file.arrayBuffer(), { type: 'array' });
+  const { rows, date } = parseCollecteWorkbook(wb);
+  if (!rows.length) { showToast('Aucune ligne reconnue dans ce fichier.', 4000); return; }
+  const arrs = [...new Set(rows.map((r) => r.arrondissement).filter(Boolean))];
+  const kg = rows.reduce((a, r) => a + r.tickets.reduce((x, t) => x + t.kg, 0), 0);
+  const unknown = rows.filter((r) => !deviceByParc(r.vehicule)).length;
+  $('fForm').innerHTML = `<div class="stat fform"><b style="font-size:16px">Import : ${esc(file.name)}</b>
+    <p class="msg">${rows.length} lignes reconnues · ${arrs.length} arrondissement(s) : ${esc(arrs.join(', '))} · tonnage ${(kg / 1000).toFixed(2)} t
+    ${unknown ? `<br><span class="warn">⚠ ${unknown} véhicule(s) non reconnu(s) parmi les boîtiers : la ligne sera importée sans lien GPS.</span>` : ''}</p>
+    <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap"><label style="margin:0">Importer à la date<input type="date" id="fiDate" value="${date || $('fJour').value}"></label>
+    <button class="btn" style="width:auto;padding:9px 18px" id="fiGo">Importer</button><button class="btn2" id="fiCancel">Annuler</button></div><div id="fiMsg" class="msg"></div></div>`;
+  $('fiCancel').onclick = () => { $('fForm').innerHTML = ''; };
+  $('fiGo').onclick = async () => {
+    const jour = $('fiDate').value;
+    $('fiMsg').textContent = 'Import en cours…';
+    const body = [];
+    for (const r of rows) {
+      const d = deviceByParc(r.vehicule);
+      body.push({ ...r, jour, imei: d ? d.imei : null, circuit_code: d ? await suggestCircuit(d.imei, jour, r.heure_depart) : null });
+    }
+    const { error } = await sb.from('feuilles_route').insert(body);
+    if (error) { $('fiMsg').innerHTML = `<span style="color:#BD171E">${esc(error.message)}</span>`; return; }
+    $('fForm').innerHTML = '';
+    $('fJour').value = jour;
+    showToast(`${body.length} lignes importées au ${fDay(jour)}.`, 4000);
+    loadFdr();
+  };
+}
+
 // ---------- Interface ----------
 let curTab = 'live';
 document.querySelectorAll('.rb[data-tab]').forEach((b) => b.onclick = () => {
@@ -1756,20 +2346,24 @@ document.querySelectorAll('.rb[data-tab]').forEach((b) => b.onclick = () => {
   if (tab !== 'hist') playStop();
   closeDatePickers();
   ['live', 'hist', 'circ', 'rep'].forEach((k) => { $('tab-' + k).hidden = k !== tab; });
+  const FULL = { rep: 'report', data: 'dataPanel', kpi: 'kpiPanel', fdr: 'fdrPanel' };
+  const full = !!FULL[tab];
+  Object.entries(FULL).forEach(([k, id]) => { $(id).hidden = k !== tab; });
   // calques de la carte
   const want = {
     live: detImei ? [detLayer, overlayCirc] : [fleetLayer, overlayCirc],
-    hist: [histLayer], circ: [circLayer], rep: [],
-  }[tab];
+    hist: [histLayer], circ: [circLayer],
+  }[tab] || [];
   [fleetLayer, overlayCirc, detLayer, histLayer, circLayer].forEach((l) => (want.includes(l) ? l.addTo(map) : map.removeLayer(l)));
-  $('report').hidden = tab !== 'rep';
-  $('mapwrap').hidden = tab === 'rep';
+  $('mapwrap').hidden = full;
   $('trips').hidden = !(tab === 'live' && detImei && detTrips.length);
-  document.body.classList.toggle('no-side', tab === 'rep');
-  $('side').hidden = tab === 'rep';
-  $('sideToggle').hidden = tab === 'rep';
-  if (tab === 'rep') { if (!repLoaded) loadReport(); }
-  else setTimeout(() => map.invalidateSize(), 30);
+  $('side').hidden = full;
+  $('sideToggle').hidden = full;
+  if (tab === 'rep' && !repLoaded) loadReport();
+  if (tab === 'data' && !execGrid.rows.length) loadData();
+  if (tab === 'kpi' && !kpiRows.length) loadKpi();
+  if (tab === 'fdr') loadFdr();
+  if (!full) setTimeout(() => map.invalidateSize(), 30);
   if (tab === 'circ' && !circLayer.getLayers().length) showCircuit();
 });
 $('sideToggle').onclick = () => {
@@ -1820,6 +2414,26 @@ $('cGo').onclick = calcCircuit;
   $('rFrom').value = isoDay(w); $('rTo').value = isoDay(y);
 }
 $('rGo').onclick = loadReport;
+// Module Data
+$('mdGo').onclick = loadData;
+$('mdCalc').onclick = () => recalcPick(dataPick, loadData);
+document.querySelectorAll('.mtabs button').forEach((b) => b.onclick = () => {
+  document.querySelectorAll('.mtabs button').forEach((x) => x.classList.toggle('on', x === b));
+  mdTab = b.dataset.m; $('mdExec').hidden = mdTab !== 'exec'; $('mdAct').hidden = mdTab !== 'act';
+  loadData();
+});
+// Rapport circuits
+$('kpGo').onclick = loadKpi;
+$('kpCalc').onclick = () => recalcPick(kpiPick, loadKpi);
+$('kpPrint').onclick = () => { document.querySelectorAll('#kpBody details').forEach((d) => { d.open = true; }); window.print(); };
+// Feuille de route
+$('fJour').value = isoDay(new Date());
+$('fJour').onchange = () => { $('fForm').innerHTML = ''; loadFdr(); };
+$('fArr').onchange = renderFdr;
+$('fAdd').onclick = () => fdrForm(null);
+$('fDup').onclick = fdrCopyYesterday;
+$('fImp').onclick = () => $('fFile').click();
+$('fFile').onchange = (e) => { const fl = e.target.files[0]; e.target.value = ''; if (fl) fdrImport(fl); };
 $('rCalc').onclick = recalcReport;
 $('rCsv').onclick = exportCsv;
 document.querySelectorAll('.rep-tabs button').forEach((b) => b.onclick = () => {
