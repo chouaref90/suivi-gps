@@ -274,6 +274,23 @@
   #acMap { height: 340px; border: 1px solid var(--border); }
   @media (max-width: 900px) { .acgrid { grid-template-columns: 1fr; } }
 
+  /* alertes */
+  .rb .bdg { position: absolute; top: 6px; right: 8px; min-width: 18px; height: 18px; border-radius: 9px; background: #BD171E; color: #fff;
+    font-size: 11px; font-weight: 700; line-height: 18px; padding: 0 4px; box-shadow: 0 0 0 2px #fff; }
+  .rb.on .bdg { box-shadow: 0 0 0 2px var(--accent); }
+  #alToasts { position: fixed; top: 12px; right: 12px; z-index: 3500; display: flex; flex-direction: column; gap: 8px; width: 330px; max-width: calc(100vw - 24px); }
+  .altoast { background: #fff; border-left: 5px solid; border-radius: 6px; box-shadow: 0 6px 20px rgba(0,0,0,.25); padding: 10px 12px; font-size: 13px; cursor: pointer;
+    animation: alIn .25s ease-out; }
+  .altoast .at-h { display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px; }
+  .altoast .at-h button { border: 0; background: none; font-size: 18px; cursor: pointer; color: var(--muted); }
+  @keyframes alIn { from { transform: translateX(30px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .alchips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 12px; }
+  .alchip { border: 1px solid var(--border); border-radius: 16px; padding: 4px 12px; font-size: 13px; cursor: pointer; background: #fff; }
+  .alchip:hover { border-color: var(--accent); }
+  .alset { display: grid; grid-template-columns: 1fr 1.2fr; gap: 18px; }
+  #zMap { height: 380px; border: 1px solid var(--border); cursor: crosshair; }
+  @media (max-width: 1000px) { .alset { grid-template-columns: 1fr; } }
+
   /* ---- Rapports (anciens écrans) ---- */
   #report { position: absolute; inset: 0; overflow: auto; padding: 20px 24px; background: #fff; z-index: 1100; }
   #report h2 { margin: 0 0 12px; font-size: 20px; color: var(--accent-dark); }
@@ -374,6 +391,7 @@
   <button class="rb" data-tab="fdr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2.8h6V4M8.5 10h7M8.5 14h7M8.5 18h4"/></svg><span class="tip">Feuille de route</span></button>
   <button class="rb" data-tab="rep"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4M7 14h3M7 17h3M13 14h4"/></svg><span class="tip">Résultats & planning</span></button>
   <div class="rail-sp"></div>
+  <button class="rb" data-tab="alr" id="rbAlert"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M6 8a6 6 0 1 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.9 1.9 0 0 0 3.4 0"/></svg><span class="bdg" id="alBadge" hidden>0</span><span class="tip">Alertes</span></button>
   <button class="rb" data-tab="adm" id="rbAdmin" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg><span class="tip">Administration</span></button>
   <span id="live" class="live-dot" title="Connexion…"></span>
   <button class="rb" id="logout"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3v9"/><path d="M6.3 6.8a8 8 0 1 0 11.4 0"/></svg><span class="tip" id="userMail">Déconnexion</span></button>
@@ -507,6 +525,33 @@
     <div class="kpis" id="fKpis"></div>
     <div id="fForm"></div>
     <div id="fBody"></div>
+  </div>
+
+  <div class="fp" id="alrPanel" hidden>
+    <h2>Alertes</h2>
+    <div class="mtabs"><button class="on" data-l="list">Alertes</button><button data-l="set" id="alSetBtn" hidden>Réglages & zones</button></div>
+    <div id="alList">
+      <div class="rep-ctrl">
+        <div class="dfield" id="alDate"></div>
+        <select id="alType" style="width:auto"></select>
+        <select id="alVeh" style="width:auto"></select>
+        <label class="chk" style="margin:0"><input type="checkbox" id="alUnread"> Non lues seulement</label>
+        <button class="btn" id="alGo" style="width:auto">Afficher</button>
+        <button class="btn2" id="alAllRead">Tout marquer comme lu</button>
+        <label class="chk" style="margin:0" title="Bip sonore à chaque nouvelle alerte"><input type="checkbox" id="alSound"> 🔊 Son</label>
+      </div>
+      <div class="alchips" id="alChips"></div>
+      <div id="alGrid"></div>
+    </div>
+    <div id="alSet" hidden>
+      <div class="alset">
+        <div><h3 style="color:var(--accent-dark);margin-top:0">Règles d'alerte</h3><div id="alRules"></div>
+          <p class="msg">La détection tourne automatiquement toutes les 2 minutes dans Supabase.</p></div>
+        <div><h3 style="color:var(--accent-dark);margin-top:0;display:flex;justify-content:space-between;align-items:center">Zones
+          <button class="btn2" id="zNew" style="padding:5px 12px">+ Nouvelle zone</button></h3>
+          <div id="zMap"></div><div id="zForm"></div><div id="zList"></div></div>
+      </div>
+    </div>
   </div>
 
   <div class="fp" id="admPanel" hidden>
@@ -1934,6 +1979,7 @@ class Grid {
     this.el.querySelector('.pg').textContent = this.page + 1;
     this.el.querySelector('[data-x=prev]').disabled = this.page === 0;
     this.el.querySelector('[data-x=next]').disabled = this.page >= pages - 1;
+    if (this.o.onRender) this.o.onRender();
   }
   exportCsv() {
     const rows = this.filtered();
@@ -2393,6 +2439,7 @@ async function checkAdmin() {
   const { data, error } = await sb.rpc('is_admin');
   isAdmin = !error && data === true;
   $('rbAdmin').hidden = !isAdmin;
+  $('alSetBtn').hidden = !isAdmin;
 }
 function admTab(t) {
   document.querySelectorAll('#admPanel .mtabs button').forEach((b) => b.classList.toggle('on', b.dataset.a === t));
@@ -2649,6 +2696,218 @@ async function loadAdmCirc() {
   });
 }
 
+
+// =====================================================================
+//  ALERTES
+// =====================================================================
+const ALR = {
+  vitesse: ['🚀', 'Excès de vitesse'], alim: ['🔌', 'Coupure d\'alimentation'], batterie: ['🔋', 'Batterie boîtier faible'],
+  hors_ligne: ['📡', 'Boîtier hors ligne'], ralenti: ['⏱️', 'Ralenti excessif'], non_demarre: ['🚫', 'Circuit non démarré'],
+  circuit_faible: ['📉', 'Circuit insuffisant'], hors_horaires: ['🌙', 'Mouvement hors horaires'], zone: ['📍', 'Entrée / sortie de zone'],
+};
+const NIV = { critique: ['Critique', '#BD171E'], warning: ['Attention', '#f59e0b'], info: ['Info', '#2f6fbf'] };
+const alrLbl = (t) => (ALR[t] ? `${ALR[t][0]} ${ALR[t][1]}` : t);
+const vehLbl = (a) => a.vehicule || a.plate || (a.imei ? (devices.get(a.imei) ? label(devices.get(a.imei)) : a.imei) : '—');
+let alrUnread = 0, alrRows = [];
+const zonesLayer = L.layerGroup();
+let zonesList = [];
+const alrPick = new DatePick($('alDate'), { allowEmpty: false, value: DatePick.day(isoDay(new Date())) });
+const getSound = () => { try { return localStorage.getItem('sos_alert_sound') !== '0'; } catch { return true; } };
+
+function setBadge(n) {
+  alrUnread = Math.max(0, n);
+  $('alBadge').textContent = alrUnread > 99 ? '99+' : alrUnread;
+  $('alBadge').hidden = !alrUnread;
+}
+async function loadUnread() {
+  const { count, error } = await sb.from('alertes').select('id', { count: 'exact', head: true }).eq('lu', false);
+  if (!error) setBadge(count || 0);
+}
+function beep() {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [0, 0.18].forEach((t) => { const o = ctx.createOscillator(), g = ctx.createGain(); o.frequency.value = 880; g.gain.value = 0.08;
+      o.connect(g); g.connect(ctx.destination); o.start(ctx.currentTime + t); o.stop(ctx.currentTime + t + 0.12); });
+  } catch {}
+}
+// Notification en direct (coin haut droit)
+function notifyAlert(a) {
+  let box = $('alToasts');
+  if (!box) { box = document.createElement('div'); box.id = 'alToasts'; document.body.appendChild(box); }
+  const el = document.createElement('div');
+  const niv = NIV[a.niveau] || NIV.warning;
+  el.className = 'altoast';
+  el.style.borderLeftColor = niv[1];
+  el.innerHTML = `<div class="at-h"><b>${alrLbl(a.type)}</b><button title="Fermer">×</button></div>
+    <div><b>${esc(vehLbl(a))}</b> · ${fmtHour(a.ts)}</div><div class="msg" style="margin:2px 0 0">${esc(a.message)}</div>`;
+  el.querySelector('button').onclick = (e) => { e.stopPropagation(); el.remove(); };
+  el.onclick = () => { el.remove(); showAlertOnMap(a); };
+  box.prepend(el);
+  while (box.children.length > 4) box.lastChild.remove();
+  setTimeout(() => el.remove(), 15000);
+  if (getSound() && a.niveau !== 'info') beep();
+}
+let alrMarker = null;
+function showAlertOnMap(a) {
+  if (a.lat === null || a.lat === undefined) {
+    if (a.circuit_code) { const c = [...circuits.values()].find((x) => x.code === a.circuit_code); if (c) { document.querySelector('.rb[data-tab="circ"]').click(); $('cCirc').value = c.id; showCircuit(); } }
+    else if (a.imei) openDetail(a.imei);
+    return;
+  }
+  if (detImei) closeDetail();
+  document.querySelector('.rb[data-tab="live"]').click();
+  if (alrMarker) map.removeLayer(alrMarker);
+  alrMarker = L.circleMarker([a.lat, a.lng], { radius: 11, color: '#fff', weight: 3, fillColor: (NIV[a.niveau] || NIV.warning)[1], fillOpacity: 1 })
+    .bindPopup(`<b>${alrLbl(a.type)}</b><br>${esc(vehLbl(a))} · ${fmtTime(a.ts)}<br>${esc(a.message)}<br><span data-g="${geoKey(a.lat, a.lng)}">…</span>
+      ${a.imei ? `<br><a href="#" onclick="openDetail('${a.imei}');return false">Ouvrir la fiche véhicule ›</a>` : ''}`).addTo(map);
+  map.flyTo([a.lat, a.lng], 16);
+  setTimeout(() => { alrMarker.openPopup(); fillAddr(a.lat, a.lng); }, 600);
+}
+
+const alrGrid = new Grid($('alGrid'), [
+  { k: 'ts', h: 'Date / heure', f: (a) => fmtTime(a.ts), v: (a) => a.ts },
+  { k: 'niv', h: 'Niveau', f: (a) => (NIV[a.niveau] || NIV.warning)[0],
+    html: (a) => { const n = NIV[a.niveau] || NIV.warning; return `<span class="badge" style="background:${n[1]}">${n[0]}</span>`; } },
+  { k: 'type', h: 'Alerte', f: (a) => alrLbl(a.type) },
+  { k: 'veh', h: 'Véhicule', f: (a) => vehLbl(a) },
+  { k: 'msg', h: 'Détail', f: (a) => a.message, html: (a) => `<span style="white-space:normal">${esc(a.message)}</span>` },
+  { k: 'lieu', h: 'Lieu', f: (a) => (a.zone_nom || (a.circuit_code ? `Circuit ${a.circuit_code}` : '')),
+    html: (a) => (a.lat !== null && a.lat !== undefined ? `<a href="#" onclick="return false">🗺 Voir</a> ${a.zone_nom ? esc(a.zone_nom) : ''}` : esc(a.circuit_code ? `Circuit ${a.circuit_code}` : '')) },
+  { k: 'lu', h: 'Statut', f: (a) => (a.lu ? 'Lu' : 'Non lu'),
+    html: (a) => (a.lu ? `<small class="msg" title="${esc(a.lu_par || '')}">✓ Lu${a.lu_le ? ' ' + fmtHour(a.lu_le) : ''}</small>`
+      : `<button class="btn2" style="padding:3px 9px" data-read="${a.id}">Marquer lu</button>`) },
+], { file: 'alertes', rowClick: (a) => showAlertOnMap(a), onRender: () => bindReadButtons() });
+
+async function loadAlerts() {
+  const iv = alrPick.intervals();
+  const from = iv[0][0], to = iv[iv.length - 1][1];
+  let q = sb.from('alertes_list').select('*').gte('ts', from.toISOString()).lte('ts', to.toISOString()).order('ts', { ascending: false }).limit(3000);
+  if ($('alType').value) q = q.eq('type', $('alType').value);
+  if ($('alVeh').value) q = q.eq('imei', $('alVeh').value);
+  if ($('alUnread').checked) q = q.eq('lu', false);
+  const { data, error } = await q;
+  if (error) return showErr('Alertes : ' + error.message + (/alertes/.test(error.message) ? ' (as-tu exécuté alertes_v11.sql ?)' : ''));
+  alrRows = data;
+  const cnt = {}; data.forEach((a) => { cnt[a.type] = (cnt[a.type] || 0) + 1; });
+  $('alChips').innerHTML = Object.keys(ALR).filter((t) => cnt[t]).map((t) => `<span class="alchip" data-t="${t}">${ALR[t][0]} ${ALR[t][1]} <b>${cnt[t]}</b></span>`).join('')
+    || '<span class="msg">Aucune alerte sur cette période 👍</span>';
+  $('alChips').querySelectorAll('[data-t]').forEach((c) => c.onclick = () => { $('alType').value = c.dataset.t; loadAlerts(); });
+  alrGrid.setRows(data);
+  bindReadButtons();
+}
+function bindReadButtons() {
+  $('alGrid').querySelectorAll('[data-read]').forEach((b) => b.onclick = (e) => { e.stopPropagation(); markRead([+b.dataset.read]); });
+}
+async function markRead(ids) {
+  if (!ids.length) return;
+  const { data: s } = await sb.auth.getSession();
+  const { error } = await sb.from('alertes').update({ lu: true, lu_par: s.session ? s.session.user.email : null, lu_le: new Date().toISOString() }).in('id', ids).eq('lu', false);
+  if (error) return showErr(error.message);
+  alrRows.forEach((a) => { if (ids.includes(a.id)) { a.lu = true; a.lu_le = new Date().toISOString(); } });
+  alrGrid.render(); bindReadButtons();
+  loadUnread();
+}
+function fillAlertFilters() {
+  $('alType').innerHTML = '<option value="">Tous les types</option>' + Object.entries(ALR).map(([k, [i, l]]) => `<option value="${k}">${i} ${l}</option>`).join('');
+  $('alVeh').innerHTML = '<option value="">Tous les véhicules</option>' + [...devices.values()].sort((a, b) => label(a).localeCompare(label(b), 'fr', { numeric: true }))
+    .map((d) => `<option value="${d.imei}">${esc(label(d))}</option>`).join('');
+}
+
+// ---------- Réglages (administrateurs) ----------
+async function loadAlertRules() {
+  const { data, error } = await sb.from('alert_regles').select('*');
+  if (error) return showErr(error.message);
+  const order = Object.keys(ALR);
+  data.sort((a, b) => order.indexOf(a.type) - order.indexOf(b.type));
+  $('alRules').innerHTML = `<table class="gtbl atbl"><thead><tr><th>Alerte</th><th>Active</th><th>Seuil</th><th>Unité</th><th>Niveau</th><th></th></tr></thead><tbody>
+    ${data.map((r) => `<tr data-t="${r.type}"><td>${alrLbl(r.type)}</td>
+      <td style="text-align:center"><input type="checkbox" data-k="actif" ${r.actif ? 'checked' : ''} style="width:auto"></td>
+      <td>${r.seuil === null ? '<small class="msg">—</small>' : `<input type="number" data-k="seuil" value="${r.seuil}" style="width:90px">`}</td>
+      <td><small class="msg">${esc(r.unite || '')}</small></td>
+      <td><select data-k="niveau" style="width:auto">${Object.entries(NIV).map(([k, [l]]) => `<option value="${k}"${k === r.niveau ? ' selected' : ''}>${l}</option>`).join('')}</select></td>
+      <td><button class="btn2" data-save style="padding:4px 10px" hidden>Enregistrer</button></td></tr>`).join('')}</tbody></table>`;
+  $('alRules').querySelectorAll('tr[data-t] input, tr[data-t] select').forEach((i) => i.onchange = i.oninput = () => {
+    const tr = i.closest('tr'); tr.classList.add('dirty'); tr.querySelector('[data-save]').hidden = false;
+  });
+  $('alRules').querySelectorAll('[data-save]').forEach((b) => b.onclick = async () => {
+    const tr = b.closest('tr'), ch = {};
+    tr.querySelectorAll('[data-k]').forEach((i) => { ch[i.dataset.k] = i.type === 'checkbox' ? i.checked : i.type === 'number' ? Number(i.value) : i.value; });
+    const { data: d, error: e } = await sb.from('alert_regles').update(ch).eq('type', tr.dataset.t).select('type');
+    if (e || !d.length) { showToast(e ? e.message : 'Refusé (administrateur uniquement).', 4000); return; }
+    tr.classList.remove('dirty'); b.hidden = true; showToast('Règle enregistrée.', 2000);
+  });
+}
+let zMap = null, zLayer = null, zDraft = null;
+async function loadZones(drawMain = true) {
+  const { data, error } = await sb.from('zones').select('*').order('nom');
+  if (error) return;
+  zonesList = data;
+  if (drawMain) {
+    zonesLayer.clearLayers();
+    data.filter((z) => z.actif).forEach((z) => L.circle([z.lat, z.lng], { radius: z.rayon_m, color: '#0d9488', weight: 2, dashArray: '5 5', fillOpacity: 0.06 })
+      .bindTooltip(`📍 ${z.nom}`).addTo(zonesLayer));
+  }
+}
+async function renderZonesAdmin() {
+  await loadZones();
+  if (!zMap) {
+    zMap = L.map('zMap').setView(map.getCenter(), 13);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19, attribution: '© OpenStreetMap' }).addTo(zMap);
+    zLayer = L.layerGroup().addTo(zMap);
+    zMap.on('click', (e) => { if (zDraft) { zDraft.lat = e.latlng.lat; zDraft.lng = e.latlng.lng; drawZones(); zoneForm(); } });
+  }
+  setTimeout(() => zMap.invalidateSize(), 50);
+  drawZones(true);
+  $('zList').innerHTML = zonesList.length ? `<table class="gtbl atbl"><thead><tr><th>Zone</th><th>Type</th><th>Rayon</th><th>Entrée</th><th>Sortie</th><th>Active</th><th></th></tr></thead><tbody>
+    ${zonesList.map((z) => `<tr><td><b>${esc(z.nom)}</b></td><td>${esc(z.type || '')}</td><td>${z.rayon_m} m</td><td>${z.alerte_entree ? '✓' : ''}</td><td>${z.alerte_sortie ? '✓' : ''}</td><td>${z.actif ? '✓' : '—'}</td>
+      <td style="white-space:nowrap"><button class="ibtn" data-ze="${z.id}" title="Modifier">✎</button><button class="ibtn" data-zd="${z.id}" title="Supprimer" style="color:#BD171E">🗑</button></td></tr>`).join('')}</tbody></table>`
+    : '<p class="msg">Aucune zone. Clique sur « + Nouvelle zone » puis sur la carte.</p>';
+  $('zList').querySelectorAll('[data-ze]').forEach((b) => b.onclick = () => { zDraft = { ...zonesList.find((z) => z.id === +b.dataset.ze) }; drawZones(); zoneForm(); zMap.setView([zDraft.lat, zDraft.lng], 16); });
+  $('zList').querySelectorAll('[data-zd]').forEach((b) => b.onclick = async () => {
+    if (b.dataset.sure !== '1') { b.dataset.sure = '1'; b.textContent = 'Confirmer ?'; setTimeout(() => { b.dataset.sure = ''; b.textContent = '🗑'; }, 3000); return; }
+    const { error } = await sb.from('zones').delete().eq('id', +b.dataset.zd);
+    if (error) return showToast(error.message, 4000);
+    zDraft = null; $('zForm').innerHTML = ''; renderZonesAdmin();
+  });
+}
+function drawZones(fit) {
+  zLayer.clearLayers();
+  const all = zonesList.filter((z) => !zDraft || z.id !== zDraft.id).map((z) => L.circle([z.lat, z.lng], { radius: z.rayon_m, color: '#0d9488', weight: 2, fillOpacity: 0.1 }).bindTooltip(z.nom).addTo(zLayer));
+  if (zDraft && zDraft.lat) L.circle([zDraft.lat, zDraft.lng], { radius: zDraft.rayon_m || 150, color: '#f97316', weight: 3, fillOpacity: 0.15 }).addTo(zLayer);
+  if (fit && all.length) zMap.fitBounds(L.featureGroup(all).getBounds(), { padding: [30, 30], maxZoom: 16 });
+}
+function zoneForm() {
+  const z = zDraft;
+  $('zForm').innerHTML = `<div class="fform">
+    <b>${z.id ? 'Modifier la zone' : 'Nouvelle zone'}</b> ${z.lat ? '' : '<span class="warn">→ clique sur la carte pour placer le centre</span>'}
+    <div class="fgrid">
+      <label>Nom<input id="zNom" value="${esc(z.nom || '')}" placeholder="Centre Akreuch"></label>
+      <label>Type<select id="zType">${['depot', 'vidage', 'autre'].map((t) => `<option value="${t}"${t === (z.type || 'autre') ? ' selected' : ''}>${{ depot: 'Dépôt', vidage: 'Centre de vidage', autre: 'Autre' }[t]}</option>`).join('')}</select></label>
+      <label>Rayon (m)<input type="number" id="zRay" value="${z.rayon_m || 150}" min="20" step="10"></label>
+    </div>
+    <div style="display:flex;gap:16px;margin:4px 0 10px">
+      <label class="chk"><input type="checkbox" id="zIn" ${z.alerte_entree !== false ? 'checked' : ''}> Alerte à l'entrée</label>
+      <label class="chk"><input type="checkbox" id="zOut" ${z.alerte_sortie !== false ? 'checked' : ''}> Alerte à la sortie</label>
+      <label class="chk"><input type="checkbox" id="zAct" ${z.actif !== false ? 'checked' : ''}> Active</label>
+    </div>
+    <button class="btn" style="width:auto;padding:8px 16px" id="zSave">Enregistrer</button> <button class="btn2" id="zX">Annuler</button></div>`;
+  $('zRay').oninput = () => { zDraft.rayon_m = +$('zRay').value; drawZones(); };
+  $('zX').onclick = () => { zDraft = null; $('zForm').innerHTML = ''; drawZones(); };
+  $('zSave').onclick = async () => {
+    if (!zDraft.lat) { showToast('Clique d\'abord sur la carte pour placer la zone.', 3000); return; }
+    const body = { nom: $('zNom').value.trim() || 'Zone', type: $('zType').value, rayon_m: +$('zRay').value || 150, lat: zDraft.lat, lng: zDraft.lng,
+      alerte_entree: $('zIn').checked, alerte_sortie: $('zOut').checked, actif: $('zAct').checked };
+    const { error } = zDraft.id ? await sb.from('zones').update(body).eq('id', zDraft.id) : await sb.from('zones').insert(body);
+    if (error) return showToast(error.message + ' (administrateur uniquement)', 5000);
+    zDraft = null; $('zForm').innerHTML = ''; renderZonesAdmin(); showToast('Zone enregistrée.', 2000);
+  };
+}
+function alrTab(t) {
+  document.querySelectorAll('#alrPanel .mtabs button').forEach((b) => b.classList.toggle('on', b.dataset.l === t));
+  $('alList').hidden = t !== 'list'; $('alSet').hidden = t !== 'set';
+  if (t === 'list') loadAlerts(); else { loadAlertRules(); renderZonesAdmin(); }
+}
+
 // ---------- Interface ----------
 let curTab = 'live';
 document.querySelectorAll('.rb[data-tab]').forEach((b) => b.onclick = () => {
@@ -2657,15 +2916,15 @@ document.querySelectorAll('.rb[data-tab]').forEach((b) => b.onclick = () => {
   if (tab !== 'hist') playStop();
   closeDatePickers();
   ['live', 'hist', 'circ', 'rep'].forEach((k) => { $('tab-' + k).hidden = k !== tab; });
-  const FULL = { rep: 'report', data: 'dataPanel', kpi: 'kpiPanel', fdr: 'fdrPanel', adm: 'admPanel' };
+  const FULL = { rep: 'report', data: 'dataPanel', kpi: 'kpiPanel', fdr: 'fdrPanel', adm: 'admPanel', alr: 'alrPanel' };
   const full = !!FULL[tab];
   Object.entries(FULL).forEach(([k, id]) => { $(id).hidden = k !== tab; });
   // calques de la carte
   const want = {
-    live: detImei ? [detLayer, overlayCirc] : [fleetLayer, overlayCirc],
+    live: detImei ? [detLayer, overlayCirc, zonesLayer] : [fleetLayer, overlayCirc, zonesLayer],
     hist: [histLayer], circ: [circLayer],
   }[tab] || [];
-  [fleetLayer, overlayCirc, detLayer, histLayer, circLayer].forEach((l) => (want.includes(l) ? l.addTo(map) : map.removeLayer(l)));
+  [fleetLayer, overlayCirc, zonesLayer, detLayer, histLayer, circLayer].forEach((l) => (want.includes(l) ? l.addTo(map) : map.removeLayer(l)));
   $('mapwrap').hidden = full;
   $('trips').hidden = !(tab === 'live' && detImei && detTrips.length);
   $('side').hidden = full;
@@ -2674,6 +2933,7 @@ document.querySelectorAll('.rb[data-tab]').forEach((b) => b.onclick = () => {
   if (tab === 'data' && !execGrid.rows.length) loadData();
   if (tab === 'kpi' && !kpiRows.length) loadKpi();
   if (tab === 'fdr') loadFdr();
+  if (tab === 'alr') alrTab(document.querySelector('#alrPanel .mtabs button.on').dataset.l);
   if (tab === 'adm') admTab(document.querySelector('#admPanel .mtabs button.on').dataset.a);
   if (!full) setTimeout(() => map.invalidateSize(), 30);
   if (tab === 'circ' && !circLayer.getLayers().length) showCircuit();
@@ -2745,6 +3005,15 @@ $('fArr').onchange = renderFdr;
 $('fAdd').onclick = () => fdrForm(null);
 $('fDup').onclick = fdrCopyYesterday;
 $('fImp').onclick = () => $('fFile').click();
+// Alertes
+document.querySelectorAll('#alrPanel .mtabs button').forEach((b) => b.onclick = () => alrTab(b.dataset.l));
+$('alGo').onclick = loadAlerts;
+$('alType').onchange = $('alVeh').onchange = $('alUnread').onchange = loadAlerts;
+$('alAllRead').onclick = () => markRead(alrRows.filter((a) => !a.lu).map((a) => a.id));
+$('alSound').checked = getSound();
+$('alSound').onchange = (e) => { try { localStorage.setItem('sos_alert_sound', e.target.checked ? '1' : '0'); } catch {} };
+$('zNew').onclick = () => { zDraft = { rayon_m: 150, alerte_entree: true, alerte_sortie: true, actif: true }; zoneForm(); drawZones(); };
+zonesLayer.addTo(map);
 // Administration
 document.querySelectorAll('#admPanel .mtabs button').forEach((b) => b.onclick = () => admTab(b.dataset.a));
 $('avSearch').oninput = renderAdmVeh;
@@ -2775,8 +3044,17 @@ function startApp(session) {
   $('userMail').textContent = `Déconnexion (${session.user.email})`;
   if (started) return;
   started = true;
-  loadFleet(true).then(loadLiveRates);
+  loadFleet(true).then(() => { loadLiveRates(); fillAlertFilters(); });
   checkAdmin();
+  loadUnread();
+  loadZones();
+  sb.channel('alertes-live')
+    .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'alertes' }, (payload) => {
+      setBadge(alrUnread + 1);
+      notifyAlert(payload.new);
+      if (curTab === 'alr' && !$('alList').hidden) loadAlerts();
+    })
+    .subscribe();
   loadCircuits();
   liveChannel = sb.channel('positions-live')
     .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'positions' }, (payload) => {
