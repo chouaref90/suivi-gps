@@ -275,6 +275,22 @@
   #acMap { height: 340px; border: 1px solid var(--border); }
   @media (max-width: 900px) { .acgrid { grid-template-columns: 1fr; } }
 
+  /* assistant IA */
+  #iaPanel { display: flex; flex-direction: column; background: #f4f6f9; }
+  #iaLog { flex: 1; overflow: auto; display: flex; flex-direction: column; gap: 12px; padding: 4px 2px 12px; }
+  .iamsg { max-width: 920px; padding: 10px 14px; border-radius: 10px; line-height: 1.55; font-size: 14px; }
+  .iamsg.me { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 3px; max-width: 70%; }
+  .iamsg.bot { align-self: flex-start; background: #fff; border: 1px solid var(--border); border-bottom-left-radius: 3px; width: 100%; }
+  .iadet { margin-top: 8px; font-size: 13px; }
+  .iadet summary { cursor: pointer; color: var(--accent); }
+  .iadet pre { white-space: pre-wrap; background: #f8fafc; border: 1px solid var(--border); padding: 8px; border-radius: 6px; font-size: 12px; }
+  .iabar { display: flex; gap: 8px; background: #fff; border: 1px solid var(--border); border-radius: 10px; padding: 8px; }
+  .iabar input { flex: 1; border: 0; outline: 0; font-size: 15px; padding: 8px; }
+  .iabar .btn { width: auto; padding: 8px 18px; }
+  .iadots i { display: inline-block; width: 6px; height: 6px; margin-right: 3px; border-radius: 50%; background: var(--accent); animation: iab 1s infinite; }
+  .iadots i:nth-child(2) { animation-delay: .15s; } .iadots i:nth-child(3) { animation-delay: .3s; }
+  @keyframes iab { 0%, 100% { opacity: .2; } 50% { opacity: 1; } }
+
   /* tableau de bord */
   #dashPanel { background: #f4f6f9; }
   #dashPanel .dhead { display: flex; flex-wrap: wrap; gap: 10px; align-items: flex-end; background: #fff; border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; }
@@ -428,6 +444,7 @@
   <button class="rb" data-tab="hist"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v4h4"/><path d="M12 8v4l3 2"/></svg><span class="tip">Rejouer un trajet</span></button>
   <button class="rb" data-tab="circ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="5" cy="18" r="2.2"/><circle cx="19" cy="6" r="2.2"/><path d="M7 18h7a3.5 3.5 0 0 0 0-7H10a3.5 3.5 0 0 1 0-7h7"/></svg><span class="tip">Circuits – taux de réalisation</span></button>
   <button class="rb" data-tab="dash"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><path d="M3 20h18"/><path d="M6 16v-5M10.5 16V7M15 16v-7M19.5 16V4"/></svg><span class="tip">Tableau de bord</span></button>
+  <button class="rb" data-tab="ia"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"><path d="M4 5h16v11H9l-4 3.5V16H4z"/><path d="M12 7.5l1 2.2 2.2 1-2.2 1-1 2.2-1-2.2-2.2-1 2.2-1z"/></svg><span class="tip">Assistant IA</span></button>
   <button class="rb" data-tab="data"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><circle cx="10" cy="10" r="7"/><path d="M15.5 15.5 21 21"/><text x="10" y="12.5" font-size="6.5" text-anchor="middle" fill="currentColor" stroke="none" font-family="Arial" font-weight="700">01</text></svg><span class="tip">Module Data</span></button>
   <button class="rb" data-tab="kpi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M12 3a9 9 0 1 0 9 9h-9z"/><path d="M15 3.5A9 9 0 0 1 20.5 9H15z"/></svg><span class="tip">Rapport circuits</span></button>
   <button class="rb" data-tab="fdr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4V2.8h6V4M8.5 10h7M8.5 14h7M8.5 18h4"/></svg><span class="tip">Feuille de route</span></button>
@@ -573,6 +590,14 @@
     <div class="rep-ctrl"><div class="dfield" id="mdDate"></div><button class="btn" id="mdGo">Valider</button><button class="btn2" id="mdCalc">Calculer maintenant</button></div>
     <div class="mtabs"><button class="on" data-m="exec">Exécution circuit</button><button data-m="act">Activité véhicule</button></div>
     <div id="mdExec"></div><div id="mdAct" hidden></div>
+  </div>
+
+  <div class="fp" id="iaPanel" hidden>
+    <h2 style="display:flex;justify-content:space-between;align-items:center">Assistant IA <button class="btn2" id="iaNew" style="font-size:13px">Nouvelle conversation</button></h2>
+    <p class="msg" style="margin:-6px 0 10px">Pose une question en français sur les engins, circuits, bacs, pannes ou alertes. L'assistant lit les données (sans rien modifier) et répond.</p>
+    <div class="alchips" id="iaChips"></div>
+    <div id="iaLog"></div>
+    <div class="iabar"><input id="iaQ" placeholder="Ex. : quels circuits sont sous 90 % cette semaine ?" autocomplete="off"><button class="btn" id="iaGo">Envoyer</button></div>
   </div>
 
   <div class="fp" id="dashPanel" hidden>
@@ -3639,6 +3664,70 @@ async function dashRecalc() {
   showToast(`${data} ligne(s) calculée(s).`, 2500); loadDash();
 }
 
+// ---------- Assistant IA ----------
+const IA_EXEMPLES = [
+  'Quels circuits n\'ont pas atteint 90 % hier ?',
+  'Quels sont les 5 engins qui ont fait le plus de km ce mois ?',
+  'Combien de bacs ont été collectés aujourd\'hui par circuit ?',
+  'Quels véhicules sont inactifs depuis plus de 24 h ?',
+  'Taux de disponibilité par catégorie ce mois',
+  'Combien d\'alertes de vitesse cette semaine, par véhicule ?',
+];
+let iaHist = [], iaN = 0;
+const iaMd = (t) => esc(t).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>').replace(/\n/g, '<br>');
+function iaInit() {
+  if ($('iaChips').innerHTML) return;
+  $('iaChips').innerHTML = IA_EXEMPLES.map((q) => `<button class="alchip">${esc(q)}</button>`).join('');
+  $('iaChips').querySelectorAll('button').forEach((b) => b.onclick = () => { $('iaQ').value = b.textContent; iaAsk(); });
+  setTimeout(() => $('iaQ').focus(), 50);
+}
+function iaBubble(html, cls) {
+  const el = document.createElement('div'); el.className = 'iamsg ' + cls; el.innerHTML = html;
+  $('iaLog').appendChild(el); $('iaLog').scrollTop = $('iaLog').scrollHeight; return el;
+}
+async function iaAsk() {
+  const q = $('iaQ').value.trim(); if (!q) return;
+  $('iaQ').value = ''; $('iaGo').disabled = true; $('iaChips').hidden = true;
+  iaBubble(esc(q), 'me');
+  const wait = iaBubble('<span class="iadots"><i></i><i></i><i></i></span> Je cherche dans les données…', 'bot');
+  try {
+    const { data, error } = await sb.functions.invoke('assistant', { body: { question: q, historique: iaHist } });
+    let out = data;
+    if (error) { try { out = await error.context.json(); } catch { out = { erreur: error.message }; } }
+    if (!out || out.erreur) throw new Error(out && out.erreur ? out.erreur : 'pas de réponse');
+    iaHist.push({ q, sql: out.sql || undefined }); iaHist = iaHist.slice(-3);
+    const n = ++iaN, rows = out.lignes || [];
+    wait.innerHTML = `<div>${iaMd(out.reponse || '')}</div>
+      ${out.graphique && rows.length > 1 ? `<div class="dch" style="height:240px;margin-top:10px"><canvas id="iaCh${n}"></canvas></div>` : ''}
+      ${rows.length ? `<details class="iadet"${rows.length <= 12 ? ' open' : ''}><summary>Voir les données (${rows.length} ligne${rows.length > 1 ? 's' : ''})</summary><div id="iaG${n}"></div></details>` : ''}
+      ${out.sql ? `<details class="iadet"><summary>Voir la requête</summary><pre>${esc(out.sql)}</pre></details>` : ''}`;
+    const fmt = (v) => (v === null || v === undefined ? '' : typeof v === 'boolean' ? (v ? 'oui' : 'non') : typeof v === 'number' ? v.toLocaleString('fr-FR')
+      : typeof v === 'string' && /^\d{4}-\d{2}-\d{2}T/.test(v) ? fmtDT(v) : typeof v === 'object' ? JSON.stringify(v) : v);
+    if (rows.length) {
+      const keys = Object.keys(rows[0]);
+      const g = new Grid($('iaG' + n), keys.map((k) => ({ k, h: k.replace(/_/g, ' '), f: (r) => fmt(r[k]), v: (r) => (typeof r[k] === 'number' ? r[k] : String(r[k] ?? '')) })),
+        { file: 'assistant_' + n, per: 25 });
+      g.setRows(rows);
+    }
+    const gr = out.graphique;
+    if (gr && rows.length > 1 && rows[0][gr.x] !== undefined) {
+      const ys = (Array.isArray(gr.y) ? gr.y : [gr.y]).filter((y) => rows[0][y] !== undefined).slice(0, 4);
+      const pal = [DC.blue, DC.green, DC.orange, DC.red, DC.purple, DC.dark, DC.sky, DC.grey];
+      const pie = gr.type === 'pie';
+      if (ys.length) dChart('iaCh' + n, { type: pie ? 'doughnut' : gr.type === 'line' ? 'line' : 'bar',
+        data: { labels: rows.slice(0, 40).map((r) => fmt(r[gr.x])), datasets: ys.map((y, i) => ({ label: y.replace(/_/g, ' '),
+          data: rows.slice(0, 40).map((r) => Number(r[y]) || 0), backgroundColor: pie ? pal : pal[i], borderColor: pie ? '#fff' : pal[i], borderRadius: pie ? 0 : 3, tension: .25 })) },
+        options: { plugins: { legend: { display: pie || ys.length > 1, position: 'bottom' } } } });
+    }
+  } catch (e) {
+    wait.innerHTML = `<span style="color:#BD171E">${esc(e.message)}</span>` +
+      (/Failed to send|non-2xx|404|not found/i.test(e.message) ? '<br><small class="msg">La fonction « assistant » est-elle bien déployée dans Supabase ?</small>' : '');
+  }
+  $('iaGo').disabled = false; $('iaQ').focus();
+  $('iaLog').scrollTop = $('iaLog').scrollHeight;
+}
+function iaReset() { iaHist = []; $('iaLog').innerHTML = ''; $('iaChips').hidden = false; $('iaQ').focus(); }
+
 // ---------- Interface ----------
 let curTab = 'live';
 document.querySelectorAll('.rb[data-tab]').forEach((b) => b.onclick = () => {
@@ -3647,7 +3736,7 @@ document.querySelectorAll('.rb[data-tab]').forEach((b) => b.onclick = () => {
   if (tab !== 'hist') playStop();
   closeDatePickers();
   ['live', 'hist', 'circ', 'rep', 'bacs'].forEach((k) => { $('tab-' + k).hidden = k !== tab; });
-  const FULL = { rep: 'report', data: 'dataPanel', kpi: 'kpiPanel', fdr: 'fdrPanel', adm: 'admPanel', alr: 'alrPanel', dash: 'dashPanel' };
+  const FULL = { rep: 'report', data: 'dataPanel', kpi: 'kpiPanel', fdr: 'fdrPanel', adm: 'admPanel', alr: 'alrPanel', dash: 'dashPanel', ia: 'iaPanel' };
   const full = !!FULL[tab];
   Object.entries(FULL).forEach(([k, id]) => { $(id).hidden = k !== tab; });
   // calques de la carte
@@ -3664,6 +3753,7 @@ document.querySelectorAll('.rb[data-tab]').forEach((b) => b.onclick = () => {
   if (tab === 'data' && !execGrid.rows.length) loadData();
   if (tab === 'kpi' && !kpiRows.length) loadKpi();
   if (tab === 'fdr') loadFdr();
+  if (tab === 'ia') iaInit();
   if (tab === 'dash') { fillDashFilters(); loadDash(); } else clearInterval(dashTimer);
   if (tab === 'alr') alrTab(document.querySelector('#alrPanel .mtabs button.on').dataset.l);
   if (tab === 'adm') admTab(document.querySelector('#admPanel .mtabs button.on').dataset.a);
@@ -3739,6 +3829,10 @@ $('fArr').onchange = renderFdr;
 $('fAdd').onclick = () => fdrForm(null);
 $('fDup').onclick = fdrCopyYesterday;
 $('fImp').onclick = () => $('fFile').click();
+// Assistant IA
+$('iaGo').onclick = iaAsk;
+$('iaQ').onkeydown = (e) => { if (e.key === 'Enter' && !$('iaGo').disabled) iaAsk(); };
+$('iaNew').onclick = iaReset;
 // Tableau de bord
 if (typeof Chart !== 'undefined') { Chart.defaults.font.family = getComputedStyle(document.body).fontFamily; Chart.defaults.color = '#4b5563'; Chart.defaults.locale = 'fr-FR'; }
 document.querySelectorAll('#dashPanel .mtabs button').forEach((b) => b.onclick = () => dashSetTab(b.dataset.d));
